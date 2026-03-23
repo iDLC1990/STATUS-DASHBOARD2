@@ -418,12 +418,14 @@ if(secretBtn) {
         const dInfoText = document.getElementById('date-info').textContent;
         const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
         
-        const records = combinedDataCache.filter(r => 
-            r.inspector === 'KOVALCHYK Y.' && 
-            (r.date || '').split(' ')[0] === lastDateStr &&
-            ['OK','NDF','SCRAP TTL'].includes(r.status) &&
-            r.type !== 'MNT'
-        );
+        const records = combinedDataCache.filter(r => {
+    const recordDate = parseDatePart(r.date);
+    const isSameDay = recordDate && recordDate.toISOString().split('T')[0] === lastDateStr;
+    return r.inspector === 'KOVALCHYK Y.' && 
+           isSameDay && 
+           ['OK','NDF','SCRAP TTL'].includes(r.status) &&
+           r.type !== 'MNT';
+});
 
         if (!records.length) return;
 
