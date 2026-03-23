@@ -2,8 +2,15 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>LCDR LIVE DATA 2026</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LCDR 2026">
+<meta name="theme-color" content="#008080">
 
 <style>
 body {
@@ -13,6 +20,7 @@ background-size: cover;
 color:#fff;
 font-family: Arial, sans-serif;
 transition: background 1s ease-in-out;
+margin: 0;
 }
 
 body::before {
@@ -32,6 +40,7 @@ justify-content:space-between;
 align-items:center;
 padding:20px 10%;
 background-color: rgba(17,17,17,0.7);
+border-bottom: 1px solid rgba(0, 128, 128, 0.3);
 }
 
 .header h1 {
@@ -43,6 +52,7 @@ font-size:24px;
 .date-info {
 color:#008080;
 font-size:18px;
+font-weight: bold;
 }
 
 .table-container {
@@ -69,6 +79,12 @@ cursor:pointer;
 background:none;
 border:none;
 color:#0ff;
+padding: 5px 10px;
+transition: 0.3s;
+}
+
+.toggle-btn:hover {
+    text-shadow: 0 0 8px #0ff;
 }
 
 table {
@@ -90,6 +106,7 @@ text-align:center;
 th {
 font-weight:bold;
 font-size:16px;
+background: rgba(0, 128, 128, 0.2);
 }
 
 td {
@@ -104,16 +121,20 @@ color:#008080;
 }
 
 .sum-col {
-background-color:#222;
+background-color: rgba(0,0,0,0.3);
 color:#0ff;
+font-weight: bold;
 }
 
 #search {
-width:80%;
+width:100%;
+max-width: 600px;
 padding:12px;
 font-size:16px;
 border-radius:5px;
-border:none;
+border: 1px solid #008080;
+background: rgba(0,0,0,0.6);
+color: #fff;
 margin:20px auto;
 display:block;
 outline: none;
@@ -150,7 +171,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background: rgba(0,0,0,0.7);
+background: rgba(0,0,0,0.8);
 justify-content:center;
 align-items:center;
 z-index:10000;
@@ -161,41 +182,28 @@ display:flex;
 }
 
 #modal-content {
-background:#222;
+background:#1a1a1a;
 color:#0ff;
 padding:20px;
-border:2px solid #0ff;
+border:2px solid #008080;
 border-radius:10px;
-max-height:80%;
+max-height:85%;
 overflow:auto;
-width:80%;
-max-width:900px;
+width:90%;
+max-width:1000px;
+box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
 }
 
 #modal-close {
 background:#008080;
 color:#000;
 border:none;
-padding:5px 15px;
+padding:8px 20px;
 cursor:pointer;
 font-weight:bold;
-margin-bottom:10px;
+margin-bottom:15px;
 border-radius: 4px;
 }
-
-#copy-btn {
-background: #0ff;
-color: #000;
-border: none;
-padding: 5px 15px;
-cursor: pointer;
-font-weight: bold;
-margin-bottom: 10px;
-display: none;
-border-radius: 4px;
-margin-left: 10px;
-}
-
 
 .header-actions {
     display: flex;
@@ -205,53 +213,43 @@ margin-left: 10px;
 
 #bulk-search-btn {
     cursor: pointer;
-    font-size: 18px;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-}
-
-#bulk-search-btn:hover {
-    opacity: 1;
+    font-size: 20px;
+    opacity: 0.8;
 }
 
 #secret-btn-kovalchyk {
 cursor: pointer;
-opacity: 0.1;
-font-size: 14px;
-transition: opacity 0.3s;
+opacity: 0.4;
+font-size: 20px;
+transition: all 0.3s;
 user-select: none;
 padding: 0 5px;
+color: #0ff;
 }
 
 #secret-btn-kovalchyk:hover {
 opacity: 1;
+text-shadow: 0 0 8px #0ff;
 }
-
-.sn-list-item {
-padding: 5px;
-border-bottom: 1px dashed #444;
-font-family: monospace;
-font-size: 16px;
-}
-
 
 #bulk-input {
     width: 100%;
-    height: 120px;
-    background: #111;
+    height: 150px;
+    background: #000;
     color: #0ff;
     border: 1px solid #008080;
     padding: 10px;
     margin-top: 10px;
     font-family: monospace;
     resize: vertical;
+    box-sizing: border-box;
 }
 
 #run-bulk-search {
     background: #008080;
     color: #000;
     border: none;
-    padding: 8px 20px;
+    padding: 10px 25px;
     margin-top: 10px;
     cursor: pointer;
     font-weight: bold;
@@ -261,6 +259,7 @@ font-size: 16px;
 @media (max-width: 900px) {
 .table-container { width:95%; }
 .header { padding:12px 4%; }
+.header h1 { font-size: 18px; }
 }
 </style>
 </head>
@@ -277,13 +276,13 @@ font-size: 16px;
 </div>
 
 <div class="table-container">
-<button id="overview-toggle" class="toggle-btn">  </button>
+<button id="overview-toggle" class="toggle-btn"> </button>
 <div id="overview-block">
 <div class="table-header">
     <span>FI Station Overview</span>
     <div class="header-actions">
-        <span id="bulk-search-btn" title=" ">🔍</span>
-        <span id="secret-btn-kovalchyk">·</span>
+        <span id="bulk-search-btn" title=" Search">🔍</span>
+        <span id="secret-btn-kovalchyk" title="Copy Today's SN">·</span>
     </div>
 </div>
 <table id="combined-table">
@@ -295,7 +294,7 @@ font-size: 16px;
 <th>WAITING</th>
 <th>SCRAP TTL</th>
 <th>SCRAP PNLA</th>
-<th>SUMA CALKOWITA</th>
+<th class="sum-col">SUMA</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -304,7 +303,7 @@ font-size: 16px;
 </div>
 
 <div class="table-container">
-<button id="diag-toggle" class="toggle-btn">    </button>
+<button id="diag-toggle" class="toggle-btn"> </button>
 <div id="diag-block">
 <div class="table-header">FI Station Diagonals</div>
 <table id="diag-table">
@@ -316,7 +315,7 @@ font-size: 16px;
 
 <div id="modal">
 <div id="modal-content">
-<button id="copy-btn">Copy SN</button>
+<button id="modal-close">Close</button>
 <div id="modal-body"></div>
 </div>
 </div>
@@ -328,32 +327,31 @@ const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
 
 let combinedDataCache = []; 
 
-function buildSheetURL(spreadsheetId, sheetName) {
-return `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
-}
-
-async function getData(sheetName, spreadsheetId = sheetId) {
-try {
-const res = await fetch(buildSheetURL(spreadsheetId, sheetName));
-if (!res.ok) throw new Error(res.statusText);
-const data = await res.json();
-return data.values || [];
-} catch (e) {
-console.error(`Fetch error ${sheetName}:`, e);
-return null; 
-}
-}
-
 const diagonalMapPrefix = {'WH8':55,'WC8':32,'WU0':43,'SQ1':43,'WM5':50,'WC7':32,'WP5':65,'WW1':75,'WM6':50};
 const diagonalMapSuffix = {'860':86,'850':85,'750':75,'700':70,'650':65,'580':58,'575':58,'550':55,'545':55,'500':50,'498':50,'495':50,'490':50,'438':43,'435':43,'430':43,'428':43,'425':43,'420':43,'418':43,'415':43,'398':43,'395':43,'390':43,'348':32,'345':32,'340':32,'328':32,'325':32,'320':32,'318':32,'315':32,'278':27,'275':27,'270':27,'248':24,'245':24,'240':24,'238':24,'235':24,'230':24};
 
 function extractDiagonal(serial) {
-if (!serial) return null;
-const s = serial.trim();
-if (s.length >= 3 && diagonalMapPrefix[s.substr(0,3)]) return diagonalMapPrefix[s.substr(0,3)];
-if (s.length >= 6 && diagonalMapSuffix[s.substr(3,3)]) return diagonalMapSuffix[s.substr(3,3)];
-const last3 = s.slice(-3);
-return diagonalMapSuffix[last3] || null;
+    if (!serial) return null;
+    const s = serial.trim();
+    return diagonalMapPrefix[s.substring(0, 3)] || 
+           diagonalMapSuffix[s.substring(3, 6)] || 
+           diagonalMapSuffix[s.slice(-3)] || null;
+}
+
+function buildSheetURL(spreadsheetId, sheetName) {
+    return `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
+}
+
+async function getData(sheetName, spreadsheetId = sheetId) {
+    try {
+        const res = await fetch(buildSheetURL(spreadsheetId, sheetName));
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        return data.values || [];
+    } catch (e) {
+        console.error(`Fetch error ${sheetName}:`, e);
+        return null; 
+    }
 }
 
 async function fetchAndCacheData() {
@@ -368,7 +366,7 @@ async function fetchAndCacheData() {
 
         const mapR = (r, insp) => ({
             date: r[0] || "", 
-            serial: r[2] || "", 
+            serial: (r[2] || "").trim(), 
             type: (r[3] || "").trim().toUpperCase(), 
             status: r[4] || "",
             name: r[5] || "", 
@@ -378,17 +376,12 @@ async function fetchAndCacheData() {
             inspector: insp
         });
 
-        const shadowBuffer = [
+        combinedDataCache = [
             ...(s1 ? s1.slice(1) : []).map(r => mapR(r, 'KOVALCHYK Y.')),
             ...(s2 ? s2.slice(1) : []).map(r => mapR(r, 'ULANOVYCH.R')),
             ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE'))
         ];
-
-        if (shadowBuffer.length > 0) {
-            combinedDataCache = shadowBuffer; 
-            return true;
-        }
-        return false;
+        return true;
     } catch (e) {
         console.error("Buffer update failed:", e);
         return false;
@@ -396,127 +389,106 @@ async function fetchAndCacheData() {
 }
 
 function parseDatePart(val) {
-if (!val) return null;
-const first = val.split(' ')[0].trim();
-if (/^\d{4}-\d{2}-\d{2}$/.test(first)) return new Date(first);
-if (/^\d{2}\.\d{2}\.\d{4}$/.test(first)) {
-const [d,m,y] = first.split('.');
-return new Date(`${y}-${m}-${d}`);
-}
-const parsed = Date.parse(first);
-return isNaN(parsed) ? null : new Date(parsed);
+    if (!val) return null;
+    const first = val.split(' ')[0].trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(first)) return new Date(first);
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(first)) {
+        const [d,m,y] = first.split('.');
+        return new Date(`${y}-${m}-${d}`);
+    }
+    const parsed = Date.parse(first);
+    return isNaN(parsed) ? null : new Date(parsed);
 }
 
 function getLastDate(data) {
-const dates = data.map(r => parseDatePart(r.date)).filter(d => d instanceof Date && !isNaN(d));
-return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
+    const dates = data.map(r => parseDatePart(r.date)).filter(d => d instanceof Date && !isNaN(d));
+    return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
 }
 
 const modal = document.getElementById('modal');
 const modalBody = document.getElementById('modal-body');
-const copyBtn = document.getElementById('copy-btn');
 const modalClose = document.getElementById('modal-close');
 
 if(modalClose) modalClose.onclick = () => modal.classList.remove('show');
 if(modal) modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
 
-// кнопка Юры
 const secretBtn = document.getElementById('secret-btn-kovalchyk');
 if(secretBtn) {
     secretBtn.onclick = () => {
-        if(!copyBtn || !modalBody || !modal) return;
-        copyBtn.style.display = "inline-block";
         const dInfoText = document.getElementById('date-info').textContent;
         const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
         
         const records = combinedDataCache.filter(r => 
             r.inspector === 'KOVALCHYK Y.' && 
             (r.date || '').split(' ')[0] === lastDateStr &&
-            (r.status === 'OK' || r.status === 'NDF'|| r.status === 'SCRAP TTL') &&
+            ['OK','NDF','SCRAP TTL'].includes(r.status) &&
             r.type !== 'MNT'
         );
 
-        let html = `<h4 style="margin:0 0 10px 0; color:#008080;"> </h4>`;
-        if (!records.length) {
-            html += "<p> .</p>";
-            copyBtn.style.display = "none";
-        } else {
-            records.forEach(r => { html += `<div class="sn-list-item">${r.serial || '--'}</div>`; });
-        }
-        modalBody.innerHTML = html;
-        modal.classList.add('show');
+        if (!records.length) return;
 
-        copyBtn.onclick = () => {
-            const textToCopy = records.map(r => r.serial).join('\n');
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const old = copyBtn.textContent;
-                copyBtn.textContent = "Copied!";
-                setTimeout(() => copyBtn.textContent = old, 1500);
-            });
-        };
+        const textToCopy = records.map(r => r.serial).join('\n');
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const oldSymbol = secretBtn.textContent;
+            secretBtn.textContent = "✓";
+            setTimeout(() => secretBtn.textContent = oldSymbol, 1200);
+        });
     };
 }
 
-//(логиув залупа)
 const bulkSearchBtn = document.getElementById('bulk-search-btn');
 if(bulkSearchBtn) {
     bulkSearchBtn.onclick = () => {
         if(!modalBody || !modal) return;
-        if(copyBtn) copyBtn.style.display = "none";
-
         modalBody.innerHTML = `
-            <h3 style="color:#0ff; margin-top:0;"> </h3>
-            <p style="font-size:14px; color:#aaa;"> </p>
-            <textarea id="bulk-input" placeholder="SN1\nSN2\nSN3..."></textarea>
+            <h3 style="color:#0ff; margin-top:0;">Search</h3>
+            <textarea id="bulk-input" placeholder="Wklej SN "></textarea>
             <button id="run-bulk-search">SZUKAJ</button>
             <div id="bulk-result" style="margin-top:20px;"></div>
         `;
         modal.classList.add('show');
 
         document.getElementById('run-bulk-search').onclick = () => {
-            const text = document.getElementById('bulk-input').value;
-            const snList = text.split('\n').map(s => s.trim()).filter(s => s !== "");
-            if(!snList.length) return;
-
-            const results = [];
-            snList.forEach(sn => {
-                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
-                if(matches.length) {
-                    
-                    matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
-                    results.push(matches[0]);
-                } else {
-                    results.push({ serial: sn, date: '---', status: 'NOT FOUND', name: '---', comment: ' ' });
-                }
-            });
-
-            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz</th><th>Info</th></tr>`;
-            results.forEach(r => {
-                const style = r.status === 'NOT FOUND' ? 'style="color:#ff5555"' : '';
-                resHtml += `<tr ${style}><td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.name}</td><td>${r.comment}</td></tr>`;
-            });
-            resHtml += `</table>`;
-            document.getElementById('bulk-result').innerHTML = resHtml;
+            const snList = document.getElementById('bulk-input').value.split(/[\n\s,]+/).map(s => s.trim()).filter(s => s !== "");
+            runSearchLogic(snList, document.getElementById('bulk-result'));
         };
     };
 }
 
+function runSearchLogic(snList, outputElement) {
+    const foundMatches = [];
+    snList.forEach(sn => {
+        const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
+        if(matches.length) {
+            matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
+            foundMatches.push(...matches); 
+        }
+    });
+
+    if (foundMatches.length) {
+        outputElement.innerHTML = `<table><thead><tr><th>Serial</th><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>INFO</th></tr></thead>
+        <tbody>${foundMatches.map((d, i) => {
+            const isFirstOfGroup = i === 0 || d.serial !== foundMatches[i-1].serial;
+            return `<tr ${isFirstOfGroup ? 'class="latest-record"' : ''}><td>${d.serial}</td><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.comment}</td></tr>`
+        }).join('')}</tbody></table>`;
+    } else {
+        outputElement.innerHTML = "<p style='color:yellow'>Brak info!</p>";
+    }
+}
+
 function openModal(name) {
-    if(!copyBtn || !modalBody || !modal) return;
-    copyBtn.style.display = "none";
     const dInfoText = document.getElementById('date-info').textContent;
     const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p> </p>";
+        modalBody.innerHTML = "<p>Brak danych</p>";
     } else {
-        let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC AFTER REPAIR</th><th>COMMENT</th></tr>';
+        let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
             html += `<tr><td>${r.serial || '--'}</td><td>${r.type || '--'}</td><td>${r.status || '--'}</td><td>${r.ocAfterRepair || '--'}</td><td>${r.comment || '--'}</td></tr>`;
         });
-        html += '</table>';
-        modalBody.innerHTML = html;
+        modalBody.innerHTML = html + '</table>';
     }
     modal.classList.add('show');
 }
@@ -535,17 +507,12 @@ function displayCombinedStats(filtered) {
         stats[n].total++; gTotal++;
     });
     const tbody = document.querySelector('#combined-table tbody');
-    if(!tbody) return;
     tbody.innerHTML = "";
-    for (let name in stats) {
+    Object.keys(stats).sort().forEach(name => {
         const row = document.createElement('tr');
-        const tdN = document.createElement('td'); tdN.textContent = name; tdN.onclick = () => openModal(name); row.appendChild(tdN);
-        ["NDF","OK","WAITING","SCRAP TTL","SCRAP PNLA"].forEach(k => {
-            const td = document.createElement('td'); td.textContent = stats[name][k] || 0; row.appendChild(td);
-        });
-        const tdT = document.createElement('td'); tdT.textContent = stats[name].total; tdT.className = "sum-col"; row.appendChild(tdT);
+        row.innerHTML = `<td onclick="openModal('${name}')">${name}</td><td>${stats[name].NDF}</td><td>${stats[name].OK}</td><td>${stats[name].WAITING}</td><td>${stats[name]['SCRAP TTL']}</td><td>${stats[name]['SCRAP PNLA']}</td><td class="sum-col">${stats[name].total}</td>`;
         tbody.appendChild(row);
-    }
+    });
     const tr = document.createElement('tr'); tr.className = "total-row";
     tr.innerHTML = `<td>TOTAL</td><td>${tNDF}</td><td>${tOK}</td><td>${tWAIT}</td><td>${tTTL}</td><td>${tPNLA}</td><td class="sum-col">${gTotal}</td>`;
     tbody.appendChild(tr);
@@ -562,138 +529,127 @@ function displayDiagonalStats(filtered) {
     });
     const tbody = document.querySelector('#diag-table tbody');
     const thead = document.querySelector('#diag-table thead');
-    if(!tbody || !thead) return;
-
-    const allDiagonals = new Set();
-    Object.values(diagStats).forEach(obj => Object.keys(obj).forEach(k => allDiagonals.add(Number(k))));
-    const allDiags = Array.from(allDiagonals).filter(n => !isNaN(n)).sort((a,b) => a - b);
-    thead.innerHTML = `<tr><th>NAME</th>${allDiags.map(d => `<th>${d}</th>`).join('')}<th class="sum-col">SUMA</th></tr>`;
+    const allDiagonals = [...new Set(Object.values(diagStats).flatMap(o => Object.keys(o)))].map(Number).sort((a,b)=>a-b);
+    thead.innerHTML = `<tr><th>NAME</th>${allDiagonals.map(d => `<th>${d}</th>`).join('')}<th class="sum-col">SUMA</th></tr>`;
     tbody.innerHTML = '';
-    Object.entries(diagStats).forEach(([name, diags]) => {
+    Object.entries(diagStats).sort().forEach(([name, diags]) => {
         const row = document.createElement('tr');
-        const tdN = document.createElement('td'); tdN.textContent = name; row.appendChild(tdN);
-        let sum = 0;
-        allDiags.forEach(d => {
-            const val = diags[d] || 0; sum += val;
-            const td = document.createElement('td'); td.textContent = val; row.appendChild(td);
-        });
-        const tdS = document.createElement('td'); tdS.textContent = sum; tdS.className = 'sum-col'; row.appendChild(tdS);
+        row.innerHTML = `<td>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
         tbody.appendChild(row);
     });
 }
 
-const searchInput = document.getElementById('search');
-if(searchInput) {
-    searchInput.addEventListener('keypress', async e => {
-        if (e.key === 'Enter') {
-            const serial = e.target.value.trim();
-            const output = document.getElementById('search-result');
-            if (!serial || !output) return;
-            output.innerHTML = "<p style='color:lightblue'>Szukam...</p>";
-            try {
-                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === serial);
-                if (matches.length) {
-                    matches.sort((a, b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
-                    let rowsHtml = matches.map((d, idx) => {
-                        const isLatest = idx === 0 ? 'class="latest-record"' : '';
-                        return `<tr ${isLatest}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`;
-                    }).join('');
-                    output.innerHTML = `<div style="color:#0ff; font-size:12px; margin-bottom:5px;"> 
-                    <table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
-                    <tbody>${rowsHtml}</tbody></table>`;
-                } else { output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; }
-            } catch (err) { output.innerHTML = "<p style='color:red'> </p>"; }
-        }
-    });
-}
+ 
+document.getElementById('search').onkeypress = async e => {
+    if (e.key === 'Enter') {
+        const inputVal = e.target.value.trim();
+        const snList = inputVal.split(/[\s,]+/).filter(s => s !== "");
+        const output = document.getElementById('search-result');
+        runSearchLogic(snList, output);
+    }
+};
 
 async function updateStats() {
-    const success = await fetchAndCacheData();
-    if (combinedDataCache.length === 0) return;
-
-    const lastDate = getLastDate(combinedDataCache);
-    let lastDateStr = lastDate ? lastDate.toISOString().split('T')[0] : "";
-    const dInfo = document.getElementById('date-info');
-    if(dInfo) dInfo.textContent = `DATE: ${lastDateStr || '--'}`;
-    
-    const filtered = combinedDataCache.filter(r => (r.date || '').split(' ')[0] === lastDateStr);
-    displayCombinedStats(filtered);
-    displayDiagonalStats(filtered);
-}
-
-const ovBtn = document.getElementById('overview-toggle');
-const ovBlock = document.getElementById('overview-block');
-if(ovBtn && ovBlock) {
-    ovBtn.onclick = () => ovBlock.style.display = (ovBlock.style.display === 'none') ? 'block' : 'none';
-}
-
-const diBtn = document.getElementById('diag-toggle');
-const diBlock = document.getElementById('diag-block');
-if(diBtn && diBlock) {
-    diBtn.onclick = () => diBlock.style.display = (diBlock.style.display === 'none') ? 'block' : 'none';
-}
-
-// ГОРЯЧИЕ КЛАВИШИ (ALT+1 и ALT+2)
-window.addEventListener('keydown', (e) => {
-    if (e.altKey) {
-        if (e.key === '1') {
-            e.preventDefault();
-            if (ovBtn) ovBtn.click();
-        }
-        if (e.key === '2') {
-            e.preventDefault();
-            if (diBtn) diBtn.click();
-        }
+    if (await fetchAndCacheData()) {
+        const lastDate = getLastDate(combinedDataCache);
+        const lastDateStr = lastDate.toISOString().split('T')[0];
+        document.getElementById('date-info').textContent = `DATE: ${lastDateStr}`;
+        const filtered = combinedDataCache.filter(r => (r.date || '').split(' ')[0] === lastDateStr);
+        displayCombinedStats(filtered);
+        displayDiagonalStats(filtered);
     }
-});
+}
+
+document.getElementById('overview-toggle').onclick = () => { 
+    const b = document.getElementById('overview-block'); 
+    b.style.display = (window.getComputedStyle(b).display === 'none') ? 'block' : 'none'; 
+};
+document.getElementById('diag-toggle').onclick = () => { 
+    const b = document.getElementById('diag-block'); 
+    b.style.display = (window.getComputedStyle(b).display === 'none') ? 'block' : 'none'; 
+};
 
 updateStats();
 setInterval(updateStats, 60000);
 
 const backgrounds = [
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg"
-];
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg",
+    "https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg"
+    ];
 let bgIndex = 0;
 setInterval(() => {
     bgIndex = (bgIndex + 1) % backgrounds.length;
     document.body.style.background = `url('${backgrounds[bgIndex]}') no-repeat center center fixed`;
     document.body.style.backgroundSize = "cover";
 }, 180000);
+
+ 
+document.addEventListener('keydown', (e) => {
+    const activeElem = document.activeElement;
+    const isTyping = (activeElem.tagName === 'INPUT' || activeElem.tagName === 'TEXTAREA');
+
+    if (e.altKey) {
+        if (e.code === 'Digit1' || e.key === '1') {
+            e.preventDefault();
+            const b = document.getElementById('overview-block');
+            const isHidden = window.getComputedStyle(b).display === 'none';
+            b.style.display = isHidden ? 'block' : 'none';
+        }
+        if (e.code === 'Digit2' || e.key === '2') {
+            e.preventDefault();
+            const b = document.getElementById('diag-block');
+            const isHidden = window.getComputedStyle(b).display === 'none';
+            b.style.display = isHidden ? 'block' : 'none';
+        }
+    }
+
+    if (e.key === 'Escape') {
+        modal.classList.remove('show');
+    }
+}, true);
+
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW Registered!', reg))
+      .catch(err => console.log('SW Error:', err));
+  });
+}
 </script>
 </body>
 </html>
