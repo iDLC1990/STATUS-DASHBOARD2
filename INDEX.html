@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LCDR LIVE DATA 2026</title>
+
+<style>
+body {
+background: url('https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg')
+no-repeat center center fixed;
+background-size: cover;
+color:#fff;
+font-family: Arial, sans-serif;
+transition: background 1s ease-in-out;
+}
+
+body::before {
+content:"";
+position: fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background: rgba(0,0,0,0.5);
+z-index:-1;
+}
+
+.header {
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 10%;
+background-color: rgba(17,17,17,0.7);
+}
+
+.header h1 {
+margin:0;
+color:#008080;
+font-size:24px;
+}
+
+.date-info {
+color:#008080;
+font-size:18px;
+}
+
+.table-container {
+width:80%;
+margin:24px auto;
+}
+
+.table-header {
+background-color:#008080;
+color:#000;
+font-weight:bold;
+font-size:18px;
+padding:10px 16px;
+border-radius:10px 10px 0 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.toggle-btn {
+margin:8px 0;
+font-size:20px;
+cursor:pointer;
+background:none;
+border:none;
+color:#0ff;
+}
+
+table {
+width:100%;
+border-collapse:collapse;
+background-color:#5555559e;
+border-radius:0 0 10px 10px;
+}
+
+table, th, td {
+border:1px solid #fff;
+}
+
+th, td {
+padding:10px;
+text-align:center;
+}
+
+th {
+font-weight:bold;
+font-size:16px;
+}
+
+td {
+font-size:16px;
+cursor:pointer;
+}
+
+.total-row {
+font-weight:bold;
+background-color:#333;
+color:#008080;
+}
+
+.sum-col {
+background-color:#222;
+color:#0ff;
+}
+
+#search {
+width:80%;
+padding:12px;
+font-size:16px;
+border-radius:5px;
+border:none;
+margin:20px auto;
+display:block;
+outline: none;
+}
+
+#search-result {
+margin-top:15px;
+}
+
+#search-result table {
+margin-top:10px;
+border:2px solid #0ff;
+background-color:#333;
+}
+
+/* Мигалка */
+@keyframes blink-active {
+  0% { background-color: rgba(0, 128, 128, 0.3); }
+  50% { background-color: rgba(0, 255, 255, 0.6); }
+  100% { background-color: rgba(0, 128, 128, 0.3); }
+}
+
+.latest-record {
+  animation: blink-active 1.5s infinite;
+  border: 2px solid #0ff !important;
+  font-weight: bold;
+}
+
+/* Модалка */
+#modal {
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background: rgba(0,0,0,0.7);
+justify-content:center;
+align-items:center;
+z-index:10000;
+}
+
+#modal.show {
+display:flex;
+}
+
+#modal-content {
+background:#222;
+color:#0ff;
+padding:20px;
+border:2px solid #0ff;
+border-radius:10px;
+max-height:80%;
+overflow:auto;
+width:80%;
+max-width:900px;
+}
+
+#modal-close {
+background:#008080;
+color:#000;
+border:none;
+padding:5px 15px;
+cursor:pointer;
+font-weight:bold;
+margin-bottom:10px;
+border-radius: 4px;
+}
+
+#copy-btn {
+background: #0ff;
+color: #000;
+border: none;
+padding: 5px 15px;
+cursor: pointer;
+font-weight: bold;
+margin-bottom: 10px;
+display: none;
+border-radius: 4px;
+margin-left: 10px;
+}
+
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#bulk-search-btn {
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+#bulk-search-btn:hover {
+    opacity: 1;
+}
+
+#secret-btn-kovalchyk {
+cursor: pointer;
+opacity: 0.1;
+font-size: 14px;
+transition: opacity 0.3s;
+user-select: none;
+padding: 0 5px;
+}
+
+#secret-btn-kovalchyk:hover {
+opacity: 1;
+}
+
+.sn-list-item {
+padding: 5px;
+border-bottom: 1px dashed #444;
+font-family: monospace;
+font-size: 16px;
+}
+
+
+#bulk-input {
+    width: 100%;
+    height: 120px;
+    background: #111;
+    color: #0ff;
+    border: 1px solid #008080;
+    padding: 10px;
+    margin-top: 10px;
+    font-family: monospace;
+    resize: vertical;
+}
+
+#run-bulk-search {
+    background: #008080;
+    color: #000;
+    border: none;
+    padding: 8px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+.table-container { width:95%; }
+.header { padding:12px 4%; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>LCDR LIVE DATA 2026</h1>
+<div class="date-info" id="date-info">DATE: --</div>
+</div>
+
+<div class="table-container">
+<input type="text" id="search" placeholder="Podaj SN / pn czesci (Enter)">
+<div id="search-result"></div>
+</div>
+
+<div class="table-container">
+<button id="overview-toggle" class="toggle-btn">  </button>
+<div id="overview-block">
+<div class="table-header">
+    <span>FI Station Overview</span>
+    <div class="header-actions">
+        <span id="bulk-search-btn" title=" ">🔍</span>
+        <span id="secret-btn-kovalchyk">·</span>
+    </div>
+</div>
+<table id="combined-table">
+<thead>
+<tr>
+<th>NAME</th>
+<th>NDF</th>
+<th>OK</th>
+<th>WAITING</th>
+<th>SCRAP TTL</th>
+<th>SCRAP PNLA</th>
+<th>SUMA CALKOWITA</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+
+<div class="table-container">
+<button id="diag-toggle" class="toggle-btn">    </button>
+<div id="diag-block">
+<div class="table-header">FI Station Diagonals</div>
+<table id="diag-table">
+<thead></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+
+<div id="modal">
+<div id="modal-content">
+<button id="copy-btn">Copy SN</button>
+<div id="modal-body"></div>
+</div>
+</div>
+
+<script>
+const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
+const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
+
+let combinedDataCache = []; 
+
+function buildSheetURL(spreadsheetId, sheetName) {
+return `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
+}
+
+async function getData(sheetName, spreadsheetId = sheetId) {
+try {
+const res = await fetch(buildSheetURL(spreadsheetId, sheetName));
+if (!res.ok) throw new Error(res.statusText);
+const data = await res.json();
+return data.values || [];
+} catch (e) {
+console.error(`Fetch error ${sheetName}:`, e);
+return null; 
+}
+}
+
+const diagonalMapPrefix = {'WH8':55,'WC8':32,'WU0':43,'SQ1':43,'WM5':50,'WC7':32,'WP5':65,'WW1':75,'WM6':50};
+const diagonalMapSuffix = {'860':86,'850':85,'750':75,'700':70,'650':65,'580':58,'575':58,'550':55,'545':55,'500':50,'498':50,'495':50,'490':50,'438':43,'435':43,'430':43,'428':43,'425':43,'420':43,'418':43,'415':43,'398':43,'395':43,'390':43,'348':32,'345':32,'340':32,'328':32,'325':32,'320':32,'318':32,'315':32,'278':27,'275':27,'270':27,'248':24,'245':24,'240':24,'238':24,'235':24,'230':24};
+
+function extractDiagonal(serial) {
+if (!serial) return null;
+const s = serial.trim();
+if (s.length >= 3 && diagonalMapPrefix[s.substr(0,3)]) return diagonalMapPrefix[s.substr(0,3)];
+if (s.length >= 6 && diagonalMapSuffix[s.substr(3,3)]) return diagonalMapSuffix[s.substr(3,3)];
+const last3 = s.slice(-3);
+return diagonalMapSuffix[last3] || null;
+}
+
+async function fetchAndCacheData() {
+    try {
+        const [s1, s2, s3] = await Promise.all([
+            getData('FI Station KOVALCHYK Y.', sheetId),
+            getData('FI Station 2 ULANOVYCH.R', sheetId),
+            getData('2024', sheetIdArchive)
+        ]);
+
+        if (!s1 && !s2) return false;
+
+        const mapR = (r, insp) => ({
+            date: r[0] || "", 
+            serial: r[2] || "", 
+            type: (r[3] || "").trim().toUpperCase(), 
+            status: r[4] || "",
+            name: r[5] || "", 
+            nameG: r[6] || "", 
+            ocAfterRepair: r[9] || "", 
+            comment: r[10] || "", 
+            inspector: insp
+        });
+
+        const shadowBuffer = [
+            ...(s1 ? s1.slice(1) : []).map(r => mapR(r, 'KOVALCHYK Y.')),
+            ...(s2 ? s2.slice(1) : []).map(r => mapR(r, 'ULANOVYCH.R')),
+            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE'))
+        ];
+
+        if (shadowBuffer.length > 0) {
+            combinedDataCache = shadowBuffer; 
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error("Buffer update failed:", e);
+        return false;
+    }
+}
+
+function parseDatePart(val) {
+if (!val) return null;
+const first = val.split(' ')[0].trim();
+if (/^\d{4}-\d{2}-\d{2}$/.test(first)) return new Date(first);
+if (/^\d{2}\.\d{2}\.\d{4}$/.test(first)) {
+const [d,m,y] = first.split('.');
+return new Date(`${y}-${m}-${d}`);
+}
+const parsed = Date.parse(first);
+return isNaN(parsed) ? null : new Date(parsed);
+}
+
+function getLastDate(data) {
+const dates = data.map(r => parseDatePart(r.date)).filter(d => d instanceof Date && !isNaN(d));
+return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
+}
+
+const modal = document.getElementById('modal');
+const modalBody = document.getElementById('modal-body');
+const copyBtn = document.getElementById('copy-btn');
+const modalClose = document.getElementById('modal-close');
+
+if(modalClose) modalClose.onclick = () => modal.classList.remove('show');
+if(modal) modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
+
+// кнопка Юры
+const secretBtn = document.getElementById('secret-btn-kovalchyk');
+if(secretBtn) {
+    secretBtn.onclick = () => {
+        if(!copyBtn || !modalBody || !modal) return;
+        copyBtn.style.display = "inline-block";
+        const dInfoText = document.getElementById('date-info').textContent;
+        const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
+        
+        const records = combinedDataCache.filter(r => 
+            r.inspector === 'KOVALCHYK Y.' && 
+            (r.date || '').split(' ')[0] === lastDateStr &&
+            (r.status === 'OK' || r.status === 'NDF'|| r.status === 'SCRAP TTL') &&
+            r.type !== 'MNT'
+        );
+
+        let html = `<h4 style="margin:0 0 10px 0; color:#008080;"> </h4>`;
+        if (!records.length) {
+            html += "<p> .</p>";
+            copyBtn.style.display = "none";
+        } else {
+            records.forEach(r => { html += `<div class="sn-list-item">${r.serial || '--'}</div>`; });
+        }
+        modalBody.innerHTML = html;
+        modal.classList.add('show');
+
+        copyBtn.onclick = () => {
+            const textToCopy = records.map(r => r.serial).join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const old = copyBtn.textContent;
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => copyBtn.textContent = old, 1500);
+            });
+        };
+    };
+}
+
+//(логиув залупа)
+const bulkSearchBtn = document.getElementById('bulk-search-btn');
+if(bulkSearchBtn) {
+    bulkSearchBtn.onclick = () => {
+        if(!modalBody || !modal) return;
+        if(copyBtn) copyBtn.style.display = "none";
+
+        modalBody.innerHTML = `
+            <h3 style="color:#0ff; margin-top:0;"> </h3>
+            <p style="font-size:14px; color:#aaa;"> </p>
+            <textarea id="bulk-input" placeholder="SN1\nSN2\nSN3..."></textarea>
+            <button id="run-bulk-search">SZUKAJ</button>
+            <div id="bulk-result" style="margin-top:20px;"></div>
+        `;
+        modal.classList.add('show');
+
+        document.getElementById('run-bulk-search').onclick = () => {
+            const text = document.getElementById('bulk-input').value;
+            const snList = text.split('\n').map(s => s.trim()).filter(s => s !== "");
+            if(!snList.length) return;
+
+            const results = [];
+            snList.forEach(sn => {
+                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
+                if(matches.length) {
+                    
+                    matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
+                    results.push(matches[0]);
+                } else {
+                    results.push({ serial: sn, date: '---', status: 'NOT FOUND', name: '---', comment: ' ' });
+                }
+            });
+
+            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz</th><th>Info</th></tr>`;
+            results.forEach(r => {
+                const style = r.status === 'NOT FOUND' ? 'style="color:#ff5555"' : '';
+                resHtml += `<tr ${style}><td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.name}</td><td>${r.comment}</td></tr>`;
+            });
+            resHtml += `</table>`;
+            document.getElementById('bulk-result').innerHTML = resHtml;
+        };
+    };
+}
+
+function openModal(name) {
+    if(!copyBtn || !modalBody || !modal) return;
+    copyBtn.style.display = "none";
+    const dInfoText = document.getElementById('date-info').textContent;
+    const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
+    const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
+
+    if (!records.length) {
+        modalBody.innerHTML = "<p> </p>";
+    } else {
+        let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC AFTER REPAIR</th><th>COMMENT</th></tr>';
+        records.forEach(r => {
+            html += `<tr><td>${r.serial || '--'}</td><td>${r.type || '--'}</td><td>${r.status || '--'}</td><td>${r.ocAfterRepair || '--'}</td><td>${r.comment || '--'}</td></tr>`;
+        });
+        html += '</table>';
+        modalBody.innerHTML = html;
+    }
+    modal.classList.add('show');
+}
+
+function displayCombinedStats(filtered) {
+    const stats = {};
+    let tNDF=0, tOK=0, tWAIT=0, tTTL=0, tPNLA=0, gTotal=0;
+    filtered.forEach(r => {
+        const n = r.name || 'UNKNOWN';
+        if (!stats[n]) stats[n] = { NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0 };
+        if (r.status === "NDF") { stats[n].NDF++; tNDF++; }
+        if (r.status === "OK") { stats[n].OK++; tOK++; }
+        if (r.status === "WAITING") { stats[n].WAITING++; tWAIT++; }
+        if (r.status === "SCRAP TTL") { stats[n]["SCRAP TTL"]++; tTTL++; }
+        if (r.status === "SCRAP PNLA") { stats[n]["SCRAP PNLA"]++; tPNLA++; }
+        stats[n].total++; gTotal++;
+    });
+    const tbody = document.querySelector('#combined-table tbody');
+    if(!tbody) return;
+    tbody.innerHTML = "";
+    for (let name in stats) {
+        const row = document.createElement('tr');
+        const tdN = document.createElement('td'); tdN.textContent = name; tdN.onclick = () => openModal(name); row.appendChild(tdN);
+        ["NDF","OK","WAITING","SCRAP TTL","SCRAP PNLA"].forEach(k => {
+            const td = document.createElement('td'); td.textContent = stats[name][k] || 0; row.appendChild(td);
+        });
+        const tdT = document.createElement('td'); tdT.textContent = stats[name].total; tdT.className = "sum-col"; row.appendChild(tdT);
+        tbody.appendChild(row);
+    }
+    const tr = document.createElement('tr'); tr.className = "total-row";
+    tr.innerHTML = `<td>TOTAL</td><td>${tNDF}</td><td>${tOK}</td><td>${tWAIT}</td><td>${tTTL}</td><td>${tPNLA}</td><td class="sum-col">${gTotal}</td>`;
+    tbody.appendChild(tr);
+}
+
+function displayDiagonalStats(filtered) {
+    const diagStats = {};
+    filtered.forEach(({name, serial, status}) => {
+        if (status !== "OK" && status !== "NDF") return;
+        const diag = extractDiagonal(serial); if (!diag) return;
+        const nm = name || 'UNKNOWN';
+        if (!diagStats[nm]) diagStats[nm] = {};
+        diagStats[nm][diag] = (diagStats[nm][diag] || 0) + 1;
+    });
+    const tbody = document.querySelector('#diag-table tbody');
+    const thead = document.querySelector('#diag-table thead');
+    if(!tbody || !thead) return;
+
+    const allDiagonals = new Set();
+    Object.values(diagStats).forEach(obj => Object.keys(obj).forEach(k => allDiagonals.add(Number(k))));
+    const allDiags = Array.from(allDiagonals).filter(n => !isNaN(n)).sort((a,b) => a - b);
+    thead.innerHTML = `<tr><th>NAME</th>${allDiags.map(d => `<th>${d}</th>`).join('')}<th class="sum-col">SUMA</th></tr>`;
+    tbody.innerHTML = '';
+    Object.entries(diagStats).forEach(([name, diags]) => {
+        const row = document.createElement('tr');
+        const tdN = document.createElement('td'); tdN.textContent = name; row.appendChild(tdN);
+        let sum = 0;
+        allDiags.forEach(d => {
+            const val = diags[d] || 0; sum += val;
+            const td = document.createElement('td'); td.textContent = val; row.appendChild(td);
+        });
+        const tdS = document.createElement('td'); tdS.textContent = sum; tdS.className = 'sum-col'; row.appendChild(tdS);
+        tbody.appendChild(row);
+    });
+}
+
+const searchInput = document.getElementById('search');
+if(searchInput) {
+    searchInput.addEventListener('keypress', async e => {
+        if (e.key === 'Enter') {
+            const serial = e.target.value.trim();
+            const output = document.getElementById('search-result');
+            if (!serial || !output) return;
+            output.innerHTML = "<p style='color:lightblue'>Szukam...</p>";
+            try {
+                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === serial);
+                if (matches.length) {
+                    matches.sort((a, b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
+                    let rowsHtml = matches.map((d, idx) => {
+                        const isLatest = idx === 0 ? 'class="latest-record"' : '';
+                        return `<tr ${isLatest}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`;
+                    }).join('');
+                    output.innerHTML = `<div style="color:#0ff; font-size:12px; margin-bottom:5px;"> 
+                    <table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody></table>`;
+                } else { output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; }
+            } catch (err) { output.innerHTML = "<p style='color:red'> </p>"; }
+        }
+    });
+}
+
+async function updateStats() {
+    const success = await fetchAndCacheData();
+    if (combinedDataCache.length === 0) return;
+
+    const lastDate = getLastDate(combinedDataCache);
+    let lastDateStr = lastDate ? lastDate.toISOString().split('T')[0] : "";
+    const dInfo = document.getElementById('date-info');
+    if(dInfo) dInfo.textContent = `DATE: ${lastDateStr || '--'}`;
+    
+    const filtered = combinedDataCache.filter(r => (r.date || '').split(' ')[0] === lastDateStr);
+    displayCombinedStats(filtered);
+    displayDiagonalStats(filtered);
+}
+
+const ovBtn = document.getElementById('overview-toggle');
+const ovBlock = document.getElementById('overview-block');
+if(ovBtn && ovBlock) {
+    ovBtn.onclick = () => ovBlock.style.display = (ovBlock.style.display === 'none') ? 'block' : 'none';
+}
+
+const diBtn = document.getElementById('diag-toggle');
+const diBlock = document.getElementById('diag-block');
+if(diBtn && diBlock) {
+    diBtn.onclick = () => diBlock.style.display = (diBlock.style.display === 'none') ? 'block' : 'none';
+}
+
+// ГОРЯЧИЕ КЛАВИШИ (ALT+1 и ALT+2)
+window.addEventListener('keydown', (e) => {
+    if (e.altKey) {
+        if (e.key === '1') {
+            e.preventDefault();
+            if (ovBtn) ovBtn.click();
+        }
+        if (e.key === '2') {
+            e.preventDefault();
+            if (diBtn) diBtn.click();
+        }
+    }
+});
+
+updateStats();
+setInterval(updateStats, 60000);
+
+const backgrounds = [
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg"
+];
+let bgIndex = 0;
+setInterval(() => {
+    bgIndex = (bgIndex + 1) % backgrounds.length;
+    document.body.style.background = `url('${backgrounds[bgIndex]}') no-repeat center center fixed`;
+    document.body.style.backgroundSize = "cover";
+}, 180000);
+</script>
+</body>
+</html>
