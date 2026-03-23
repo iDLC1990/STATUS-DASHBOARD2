@@ -1,0 +1,15 @@
+{
+  "name": "LCDR Data Dashboard",
+  "short_name": "LCDR Data",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#008080",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3502/3502688.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
