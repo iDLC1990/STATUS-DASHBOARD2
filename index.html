@@ -281,8 +281,8 @@ text-shadow: 0 0 8px #0ff;
 <div class="table-header">
     <span>FI Station Overview</span>
     <div class="header-actions">
-        <span id="bulk-search-btn" title="Bulk Search">🔍</span>
-        <span id="secret-btn-kovalchyk" title="Copy Today's SN">·</span>
+        <span id="bulk-search-btn" title=" Search">🔍</span>
+        <span id="secret-btn-kovalchyk" title=" ">·</span>
     </div>
 </div>
 <table id="combined-table">
@@ -444,7 +444,7 @@ if(bulkSearchBtn) {
         if(!modalBody || !modal) return;
         modalBody.innerHTML = `
             <h3 style="color:#0ff; margin-top:0;">Bulk Search</h3>
-            <textarea id="bulk-input" placeholder="Wklej listę SN (каждый с новой строки)"></textarea>
+            <textarea id="bulk-input" placeholder=" "></textarea>
             <button id="run-bulk-search">SZUKAJ</button>
             <div id="bulk-result" style="margin-top:20px;"></div>
         `;
@@ -457,46 +457,45 @@ if(bulkSearchBtn) {
 
             const foundMatches = [];
             const notFound = [];
-
+ 
             snList.forEach(sn => {
                 const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
                 if(matches.length) {
-  
                     matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
                     foundMatches.push(matches[0]);
                 } else {
                     notFound.push({ serial: sn, date: '---', status: 'NOT FOUND', name: '---', comment: '' });
                 }
             });
-
+ 
             const workerCounts = {};
             foundMatches.forEach(m => {
                 const wName = m.name || 'UNKNOWN';
                 workerCounts[wName] = (workerCounts[wName] || 0) + 1;
             });
-
+ 
             foundMatches.sort((a, b) => {
                 const countA = workerCounts[a.name || 'UNKNOWN'] || 0;
                 const countB = workerCounts[b.name || 'UNKNOWN'] || 0;
                 
                 if (countB !== countA) {
-                    return countB - countA;
+                    return countB - countA;  
                 }
                 return (a.name || '').localeCompare(b.name || ''); 
             });
 
-            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz (QTY)</th><th>Info</th></tr>`;
-          
+         
+            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz</th><th>Info</th></tr>`;
+            
             [...foundMatches, ...notFound].forEach(r => {
                 const isErr = r.status === 'NOT FOUND';
                 const style = isErr ? 'style="color:#ff5555; opacity:0.8;"' : '';
-                const qtyInfo = !isErr ? ` <b>(${workerCounts[r.name || 'UNKNOWN']})</b>` : '';
 
                 resHtml += `<tr ${style}>
                     <td>${r.serial}</td>
                     <td>${r.date}</td>
                     <td>${r.status}</td>
-                    <td>${r.name}${qtyInfo}</td>
+                    <td>${r.name}</td>
                     <td>${r.comment}</td>
                 </tr>`;
             });
@@ -504,14 +503,13 @@ if(bulkSearchBtn) {
         };
     };
 }
-
 function openModal(name) {
     const dInfoText = document.getElementById('date-info').textContent;
     const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak данных</p>";
+        modalBody.innerHTML = "<p>Brak </p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
@@ -648,9 +646,9 @@ setInterval(() => {
     document.body.style.backgroundSize = "cover";
 }, 180000);
 
-// ГОРЯЧИЕ КЛАВИШИ (НАДЕЖНАЯ ВЕРСИЯ)
+ 
 window.addEventListener('keydown', (e) => {
-    // Если фокус в любом поле ввода, горячие клавиши не должны мешать печатать
+   
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         if (e.key === 'Escape') modal.classList.remove('show');
         return;
@@ -676,7 +674,7 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         modal.classList.remove('show');
     }
-}, true); // Приоритетный захват событий
+}, true);  
 
 
 if ('serviceWorker' in navigator) {
