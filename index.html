@@ -455,51 +455,59 @@ if(bulkSearchBtn) {
             const snList = inputVal.split('\n').map(s => s.trim()).filter(s => s !== "");
             if(!snList.length) return;
 
-            const foundMatches = [];
+            const groups = {};  
             const notFound = [];
  
             snList.forEach(sn => {
                 const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
                 if(matches.length) {
                     matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
-                    foundMatches.push(matches[0]);
+                    const record = matches[0];
+                    const wName = record.name || 'UNKNOWN';
+                    if(!groups[wName]) groups[wName] = [];
+                    groups[wName].push(record);
                 } else {
-                    notFound.push({ serial: sn, date: '---', status: 'NOT FOUND', name: '---', comment: '' });
+                    notFound.push(sn);
                 }
             });
  
-            const workerCounts = {};
-            foundMatches.forEach(m => {
-                const wName = m.name || 'UNKNOWN';
-                workerCounts[wName] = (workerCounts[wName] || 0) + 1;
-            });
+            const sortedNames = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
  
-            foundMatches.sort((a, b) => {
-                const countA = workerCounts[a.name || 'UNKNOWN'] || 0;
-                const countB = workerCounts[b.name || 'UNKNOWN'] || 0;
-                
-                if (countB !== countA) {
-                    return countB - countA;  
-                }
-                return (a.name || '').localeCompare(b.name || ''); 
+            let resHtml = "";
+ 
+            sortedNames.forEach(name => {
+                resHtml += `
+                <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
+                    <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold; color: #0ff;">
+                        ${name} — [${groups[name].length} шт.]
+                    </summary>
+                    <table style="width: 100%; border-collapse: collapse; background: #222;">
+                        <tr style="background: #333;">
+                            <th>Serial</th><th>Data</th><th>Status</th><th>Info</th>
+                        </tr>
+                        ${groups[name].map(r => `
+                            <tr>
+                                <td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.comment}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </details>`;
             });
 
-         
-            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz</th><th>Info</th></tr>`;
-            
-            [...foundMatches, ...notFound].forEach(r => {
-                const isErr = r.status === 'NOT FOUND';
-                const style = isErr ? 'style="color:#ff5555; opacity:0.8;"' : '';
+          
+            if(notFound.length > 0) {
+                resHtml += `
+                <details style="margin-top: 20px; border: 1px solid #ff5555; border-radius: 5px;">
+                    <summary style="padding: 10px; cursor: pointer; background: rgba(255, 85, 85, 0.2); color: #ff5555; font-weight: bold;">
+                        NIE ZNALEZIONO — [${notFound.length} шт.]
+                    </summary>
+                    <div style="padding: 10px; color: #ff5555;">
+                        ${notFound.join(', ')}
+                    </div>
+                </details>`;
+            }
 
-                resHtml += `<tr ${style}>
-                    <td>${r.serial}</td>
-                    <td>${r.date}</td>
-                    <td>${r.status}</td>
-                    <td>${r.name}</td>
-                    <td>${r.comment}</td>
-                </tr>`;
-            });
-            document.getElementById('bulk-result').innerHTML = resHtml + `</table>`;
+            document.getElementById('bulk-result').innerHTML = resHtml || "<p>NIE ZNALEZIONO</p>";
         };
     };
 }
