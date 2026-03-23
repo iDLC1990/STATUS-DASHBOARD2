@@ -444,14 +444,15 @@ if(bulkSearchBtn) {
         if(!modalBody || !modal) return;
         modalBody.innerHTML = `
             <h3 style="color:#0ff; margin-top:0;">Bulk Search</h3>
-            <textarea id="bulk-input" placeholder="Wklej SN "></textarea>
+            <textarea id="bulk-input" placeholder="Wklej listę SN (каждый с новой строки)"></textarea>
             <button id="run-bulk-search">SZUKAJ</button>
             <div id="bulk-result" style="margin-top:20px;"></div>
         `;
         modal.classList.add('show');
 
         document.getElementById('run-bulk-search').onclick = () => {
-            const snList = document.getElementById('bulk-input').value.split('\n').map(s => s.trim()).filter(s => s !== "");
+            const inputVal = document.getElementById('bulk-input').value;
+            const snList = inputVal.split('\n').map(s => s.trim()).filter(s => s !== "");
             if(!snList.length) return;
 
             const foundMatches = [];
@@ -460,10 +461,11 @@ if(bulkSearchBtn) {
             snList.forEach(sn => {
                 const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
                 if(matches.length) {
+  
                     matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
                     foundMatches.push(matches[0]);
                 } else {
-                    notFound.push({ serial: sn, date: '---', status: ' ', name: '---', comment: '' });
+                    notFound.push({ serial: sn, date: '---', status: 'NOT FOUND', name: '---', comment: '' });
                 }
             });
 
@@ -474,16 +476,28 @@ if(bulkSearchBtn) {
             });
 
             foundMatches.sort((a, b) => {
-                const countA = workerCounts[a.name || 'UNKNOWN'];
-                const countB = workerCounts[b.name || 'UNKNOWN'];
-                return countB !== countA ? countB - countA : (a.name || '').localeCompare(b.name || '');
+                const countA = workerCounts[a.name || 'UNKNOWN'] || 0;
+                const countB = workerCounts[b.name || 'UNKNOWN'] || 0;
+                
+                if (countB !== countA) {
+                    return countB - countA;
+                }
+                return (a.name || '').localeCompare(b.name || ''); 
             });
 
-            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz</th><th>Info</th></tr>`;
+            let resHtml = `<table><tr><th>Serial</th><th>Data</th><th>Status</th><th>Naprawiacz (QTY)</th><th>Info</th></tr>`;
+          
             [...foundMatches, ...notFound].forEach(r => {
-                const style = r.status === 'NOT FOUND' ? 'style="color:#ff5555"' : '';
+                const isErr = r.status === 'NOT FOUND';
+                const style = isErr ? 'style="color:#ff5555; opacity:0.8;"' : '';
+                const qtyInfo = !isErr ? ` <b>(${workerCounts[r.name || 'UNKNOWN']})</b>` : '';
+
                 resHtml += `<tr ${style}>
-                    <td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.name}</td><td>${r.comment}</td>
+                    <td>${r.serial}</td>
+                    <td>${r.date}</td>
+                    <td>${r.status}</td>
+                    <td>${r.name}${qtyInfo}</td>
+                    <td>${r.comment}</td>
                 </tr>`;
             });
             document.getElementById('bulk-result').innerHTML = resHtml + `</table>`;
