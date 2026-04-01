@@ -315,6 +315,7 @@ text-shadow: 0 0 8px #0ff;
 
 <div id="modal">
 <div id="modal-content">
+<button id="modal-close">ZAMKNIJ</button>
 <div id="modal-body"></div>
 </div>
 </div>
@@ -418,13 +419,13 @@ if(secretBtn) {
         const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
         
         const records = combinedDataCache.filter(r => {
-    const recordDate = parseDatePart(r.date);
-    const isSameDay = recordDate && recordDate.toISOString().split('T')[0] === lastDateStr;
-    return r.inspector === 'KOVALCHYK Y.' && 
-           isSameDay && 
-           ['OK','NDF','SCRAP TTL'].includes(r.status) &&
-           r.type !== 'MNT';
-});
+            const recordDate = parseDatePart(r.date);
+            const isSameDay = recordDate && recordDate.toISOString().split('T')[0] === lastDateStr;
+            return r.inspector === 'KOVALCHYK Y.' && 
+                   isSameDay && 
+                   ['OK','NDF','SCRAP TTL'].includes(r.status) &&
+                   r.type !== 'MNT';
+        });
 
         if (!records.length) return;
 
@@ -442,8 +443,8 @@ if(bulkSearchBtn) {
     bulkSearchBtn.onclick = () => {
         if(!modalBody || !modal) return;
         modalBody.innerHTML = `
-            <h3 style="color:#0ff; margin-top:0;"> </h3>
-            <textarea id="bulk-input" placeholder=" "></textarea>
+            <h3 style="color:#0ff; margin-top:0;">Bulk Search</h3>
+            <textarea id="bulk-input" placeholder="Wklej numery SN rozdzielone enterem..."></textarea>
             <button id="run-bulk-search">SZUKAJ</button>
             <div id="bulk-result" style="margin-top:20px;"></div>
         `;
@@ -516,7 +517,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak </p>";
+        modalBody.innerHTML = "<p>Brak danych dla wybranego pracownika na dziś.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
@@ -573,15 +574,26 @@ function displayDiagonalStats(filtered) {
     });
 }
 
+// ОСНОВНОЙ ПОИСК С ПРАВКОЙ НА ПУСТОТУ
 document.getElementById('search').onkeypress = async e => {
     if (e.key === 'Enter') {
         const serial = e.target.value.trim();
         const output = document.getElementById('search-result');
+
+        // Если ввод пуст — просто очищаем результаты и ничего не ищем
+        if (!serial) {
+            output.innerHTML = "";
+            return;
+        }
+
         const matches = combinedDataCache.filter(r => (r.serial || '').trim() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
+        
         if (matches.length) {
             output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
             <tbody>${matches.map((d, i) => `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`).join('')}</tbody></table>`;
-        } else { output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; }
+        } else { 
+            output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
+        }
     }
 };
 
