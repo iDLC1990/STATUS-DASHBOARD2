@@ -729,11 +729,13 @@ if ('serviceWorker' in navigator) {
 // --- ЛОГИКА КЛИКА ПО ГЛАВНОМУ ЗАГОЛОВКУ ---
 document.getElementById('main-title').onclick = () => {
     const overviewBlock = document.getElementById('overview-block');
+    const diagBlock = document.getElementById('diag-block');
     const table = document.getElementById('combined-table');
     const toggleBtn = document.getElementById('overview-toggle');
 
-    // 1. Убеждаемся, что таблица развернута
+    // 1. Убеждаемся, что первая таблица развернута, а вторая СКРЫТА
     overviewBlock.style.display = 'block';
+    diagBlock.style.display = 'none';
 
     // 2. Сбрасываем старые стили масштаба (если кликают не первый раз)
     table.style.transform = 'none';
