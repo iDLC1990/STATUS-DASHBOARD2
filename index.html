@@ -43,19 +43,10 @@ background-color: rgba(17,17,17,0.7);
 border-bottom: 1px solid rgba(0, 128, 128, 0.3);
 }
 
-/* Кнопка-заголовок */
-#fit-screen-btn {
+.header h1 {
 margin:0;
 color:#008080;
 font-size:24px;
-cursor: pointer;
-user-select: none;
-transition: text-shadow 0.3s;
-}
-
-#fit-screen-btn:hover {
-text-shadow: 0 0 10px #0ff;
-color: #0ff;
 }
 
 .date-info {
@@ -79,17 +70,6 @@ border-radius:10px 10px 0 0;
 display: flex;
 justify-content: space-between;
 align-items: center;
-position: relative;
-}
-
-#live-clock {
-position: absolute;
-left: 50%;
-transform: translateX(-50%);
-color: #0ff;
-font-family: monospace;
-font-weight: bold;
-font-size: 20px;
 }
 
 .toggle-btn {
@@ -107,20 +87,11 @@ transition: 0.3s;
     text-shadow: 0 0 8px #0ff;
 }
 
-.table-wrapper {
-width: 100%;
-overflow-x: auto;
--webkit-overflow-scrolling: touch;
-background-color:#5555559e;
-border-radius:0 0 10px 10px;
-transition: all 0.3s ease;
-}
-
 table {
 width:100%;
 border-collapse:collapse;
-min-width: 600px;
-transition: all 0.3s ease;
+background-color:#5555559e;
+border-radius:0 0 10px 10px;
 }
 
 table, th, td {
@@ -130,7 +101,6 @@ border:1px solid #fff;
 th, td {
 padding:10px;
 text-align:center;
-transition: all 0.3s ease;
 }
 
 th {
@@ -142,30 +112,6 @@ background: rgba(0, 128, 128, 0.2);
 td {
 font-size:16px;
 cursor:pointer;
-}
-
-/* --- КОМПАКТНЫЙ РЕЖИМ С ВЕРТИКАЛЬНЫМ СКРОЛЛОМ --- */
-.table-wrapper.compact-mode {
-max-height: 75vh; /* Ограничиваем высоту (75% от экрана) */
-overflow-y: auto; /* Включаем вертикальный скролл */
-}
-
-.compact-mode table {
-min-width: 100%; 
-}
-
-.compact-mode th {
-position: sticky;
-top: 0;
-z-index: 10; /* Чтобы шапка всегда была поверх строк */
-background-color: #006666; /* Непрозрачный фон, чтобы строки не просвечивали при скролле */
-color: #fff;
-}
-
-.compact-mode th, .compact-mode td {
-padding: 4px 2px;
-font-size: 11px;
-word-break: break-word;
 }
 
 .total-row {
@@ -204,6 +150,7 @@ border:2px solid #0ff;
 background-color:#333;
 }
 
+/* Мигалка */
 @keyframes blink-active {
   0% { background-color: rgba(0, 128, 128, 0.3); }
   50% { background-color: rgba(0, 255, 255, 0.6); }
@@ -216,6 +163,7 @@ background-color:#333;
   font-weight: bold;
 }
 
+/* Модалка */
 #modal {
 display:none;
 position:fixed;
@@ -311,14 +259,14 @@ text-shadow: 0 0 8px #0ff;
 @media (max-width: 900px) {
 .table-container { width:95%; }
 .header { padding:12px 4%; }
-#fit-screen-btn { font-size: 18px; }
+.header h1 { font-size: 18px; }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-<h1 id="fit-screen-btn" title="Нажми для подгонки таблицы">LCDR LIVE DATA 2026</h1>
+<h1>LCDR LIVE DATA 2026</h1>
 <div class="date-info" id="date-info">DATE: --</div>
 </div>
 
@@ -327,7 +275,7 @@ text-shadow: 0 0 8px #0ff;
 <div id="search-result"></div>
 </div>
 
-<div class="table-container" id="overview-section">
+<div class="table-container">
 <button id="overview-toggle" class="toggle-btn"> </button>
 <div id="overview-block">
 <div class="table-header">
@@ -340,7 +288,6 @@ text-shadow: 0 0 8px #0ff;
         <span id="secret-btn-kovalchyk" title=" ">·</span>
     </div>
 </div>
-<div id="overview-table-wrapper" class="table-wrapper">
 <table id="combined-table">
 <thead>
 <tr>
@@ -357,18 +304,15 @@ text-shadow: 0 0 8px #0ff;
 </table>
 </div>
 </div>
-</div>
 
 <div class="table-container">
 <button id="diag-toggle" class="toggle-btn"> </button>
 <div id="diag-block">
 <div class="table-header">FI Station Diagonals</div>
-<div class="table-wrapper">
 <table id="diag-table">
 <thead></thead>
 <tbody></tbody>
 </table>
-</div>
 </div>
 </div>
 
@@ -570,26 +514,6 @@ if(bulkSearchBtn) {
         };
     };
 }
-
-// ЛОГИКА ДЛЯ ПОДГОНКИ ТАБЛИЦЫ И СКРОЛЛА
-const fitScreenBtn = document.getElementById('fit-screen-btn');
-const overviewTableWrapper = document.getElementById('overview-table-wrapper');
-const overviewSection = document.getElementById('overview-section');
-
-if(fitScreenBtn && overviewTableWrapper && overviewSection) {
-    fitScreenBtn.onclick = () => {
-        // Переключаем режим
-        overviewTableWrapper.classList.toggle('compact-mode');
-        
-        // Если режим включен, плавно скроллим страницу к таблице
-        if (overviewTableWrapper.classList.contains('compact-mode')) {
-            setTimeout(() => {
-                overviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50); // Микро-задержка, чтобы браузер успел применить CSS
-        }
-    };
-}
-
 function openModal(name) {
     const dInfoText = document.getElementById('date-info').textContent;
     const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
