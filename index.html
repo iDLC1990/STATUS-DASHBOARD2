@@ -266,7 +266,7 @@ text-shadow: 0 0 8px #0ff;
 <body>
 
 <div class="header">
-<h1>LCDR LIVE DATA 2026</h1>
+<h1 id="main-title" style="cursor: pointer; transition: 0.3s;" onmouseover="this.style.textShadow='0 0 10px #0ff'" onmouseout="this.style.textShadow='none'" title="Кликни, чтобы показать и подогнать таблицу">LCDR LIVE DATA 2026</h1>
 <div class="date-info" id="date-info">DATE: --</div>
 </div>
 
@@ -278,10 +278,10 @@ text-shadow: 0 0 8px #0ff;
 <div class="table-container">
 <button id="overview-toggle" class="toggle-btn"> </button>
 <div id="overview-block">
-<div class="table-header">
+<div class="table-header" style="position: relative;">
     <span>FI Station Overview</span>
     
-    <span id="live-clock">00:00:00</span>
+    <span id="live-clock" style="position: absolute; left: 50%; transform: translateX(-50%); color: #0ff; font-family: monospace; font-weight: bold; font-size: 20px;">00:00:00</span>
     
     <div class="header-actions">
         <span id="bulk-search-btn" title=" Search">🔍</span>
@@ -725,6 +725,43 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('SW Error:', err));
   });
 }
+
+// --- ЛОГИКА КЛИКА ПО ГЛАВНОМУ ЗАГОЛОВКУ ---
+document.getElementById('main-title').onclick = () => {
+    const overviewBlock = document.getElementById('overview-block');
+    const table = document.getElementById('combined-table');
+    const toggleBtn = document.getElementById('overview-toggle');
+
+    // 1. Убеждаемся, что таблица развернута
+    overviewBlock.style.display = 'block';
+
+    // 2. Сбрасываем старые стили масштаба (если кликают не первый раз)
+    table.style.transform = 'none';
+    table.parentElement.style.height = 'auto';
+
+    // 3. Плавно скроллим к началу блока с таблицей
+    toggleBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // 4. Ждем 500мс, пока закончится скролл, и вычисляем масштаб
+    setTimeout(() => {
+        const rect = table.getBoundingClientRect();
+        // Считаем доступное место: высота экрана минус верхняя граница таблицы минус 20px отступ снизу
+        const availableHeight = window.innerHeight - rect.top - 20;
+
+        // Если таблица длиннее, чем экран, сжимаем её
+        if (rect.height > availableHeight) {
+            const scale = availableHeight / rect.height; // Коэффициент сжатия
+            
+            // Применяем CSS-сжатие к таблице (ось сжатия - верхний центр)
+            table.style.transform = `scale(${scale})`;
+            table.style.transformOrigin = 'top center';
+            
+            // Обрезаем высоту контейнера, чтобы убрать пустую "дыру", которая остается после сжатия элемента
+            table.parentElement.style.height = `${rect.height * scale}px`;
+            table.parentElement.style.overflow = 'hidden';
+        }
+    }, 500);
+};
 </script>
 </body>
 </html>
