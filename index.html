@@ -707,6 +707,9 @@ window.addEventListener('keydown', (e) => {
         if (e.code === 'Digit2' || e.key === '2') {
             e.preventDefault();
             const b = document.getElementById('diag-block');
+            // Возвращаем видимость всему контейнеру
+            b.parentElement.style.display = 'block';
+            
             const isHidden = window.getComputedStyle(b).display === 'none';
             b.style.display = isHidden ? 'block' : 'none';
         }
@@ -733,36 +736,35 @@ document.getElementById('main-title').onclick = () => {
     const table = document.getElementById('combined-table');
     const toggleBtn = document.getElementById('overview-toggle');
 
-    // 1. Убеждаемся, что первая таблица развернута, а вторая СКРЫТА
+    // 1. Показываем первую таблицу
     overviewBlock.style.display = 'block';
-    diagBlock.style.display = 'none';
+    
+    // Скрываем не просто блок второй таблицы, а ВЕСЬ ее контейнер целиком (чтобы не было пустого места)
+    diagBlock.parentElement.style.display = 'none';
 
-    // 2. Сбрасываем старые стили масштаба (если кликают не первый раз)
+    // 2. Сбрасываем старые стили масштаба
     table.style.transform = 'none';
     table.parentElement.style.height = 'auto';
 
-    // 3. Плавно скроллим к началу блока с таблицей
-    toggleBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 3. Считаем масштаб сразу (без таймера!), исходя из высоты окна и шапки
+    const rect = table.getBoundingClientRect();
+    const availableHeight = window.innerHeight - 100; // Высота экрана минус примерная высота шапки сайта
 
-    // 4. Ждем 500мс, пока закончится скролл, и вычисляем масштаб
-    setTimeout(() => {
-        const rect = table.getBoundingClientRect();
-        // Считаем доступное место: высота экрана минус верхняя граница таблицы минус 20px отступ снизу
-        const availableHeight = window.innerHeight - rect.top - 20;
+    if (rect.height > availableHeight && rect.height > 0) {
+        const scale = availableHeight / rect.height;
+        table.style.transform = `scale(${scale})`;
+        table.style.transformOrigin = 'top center';
+        table.parentElement.style.height = `${rect.height * scale}px`;
+        table.parentElement.style.overflow = 'hidden';
+    }
 
-        // Если таблица длиннее, чем экран, сжимаем её
-        if (rect.height > availableHeight) {
-            const scale = availableHeight / rect.height; // Коэффициент сжатия
-            
-            // Применяем CSS-сжатие к таблице (ось сжатия - верхний центр)
-            table.style.transform = `scale(${scale})`;
-            table.style.transformOrigin = 'top center';
-            
-            // Обрезаем высоту контейнера, чтобы убрать пустую "дыру", которая остается после сжатия элемента
-            table.parentElement.style.height = `${rect.height * scale}px`;
-            table.parentElement.style.overflow = 'hidden';
-        }
-    }, 500);
+    // 4. Скроллим вниз (с защитой от старых браузеров ТВ, которые могут не понимать плавный скролл)
+    try {
+        toggleBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+        // Если браузер ТВ выдал ошибку на плавность, делаем обычный мгновенный прыжок
+        toggleBtn.scrollIntoView();
+    }
 };
 </script>
 </body>
