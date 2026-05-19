@@ -70,6 +70,18 @@ border-radius:10px 10px 0 0;
 display: flex;
 justify-content: space-between;
 align-items: center;
+position: relative; /* Добавлено для позиционирования часов */
+}
+
+/* Добавлен стиль для центрирования и оформления часов */
+#live-clock {
+position: absolute;
+left: 50%;
+transform: translateX(-50%);
+color: #0ff;
+font-family: monospace;
+font-weight: bold;
+font-size: 20px;
 }
 
 .toggle-btn {
@@ -87,11 +99,19 @@ transition: 0.3s;
     text-shadow: 0 0 8px #0ff;
 }
 
+/* Добавлена обертка для скролла на мобильных */
+.table-wrapper {
+width: 100%;
+overflow-x: auto;
+-webkit-overflow-scrolling: touch;
+background-color:#5555559e;
+border-radius:0 0 10px 10px;
+}
+
 table {
 width:100%;
 border-collapse:collapse;
-background-color:#5555559e;
-border-radius:0 0 10px 10px;
+min-width: 600px; /* Таблица не будет сжиматься меньше 600px */
 }
 
 table, th, td {
@@ -288,6 +308,7 @@ text-shadow: 0 0 8px #0ff;
         <span id="secret-btn-kovalchyk" title=" ">·</span>
     </div>
 </div>
+<div class="table-wrapper">
 <table id="combined-table">
 <thead>
 <tr>
@@ -304,15 +325,18 @@ text-shadow: 0 0 8px #0ff;
 </table>
 </div>
 </div>
+</div>
 
 <div class="table-container">
 <button id="diag-toggle" class="toggle-btn"> </button>
 <div id="diag-block">
 <div class="table-header">FI Station Diagonals</div>
+<div class="table-wrapper">
 <table id="diag-table">
 <thead></thead>
 <tbody></tbody>
 </table>
+</div>
 </div>
 </div>
 
