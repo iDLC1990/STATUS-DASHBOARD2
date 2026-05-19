@@ -281,6 +281,7 @@ text-shadow: 0 0 8px #0ff;
 <div class="table-header">
     <span>FI Station Overview</span>
     <div class="header-actions">
+        <span id="live-clock" style="color: #0ff; font-family: monospace; font-weight: bold; margin-right: 10px;">00:00:00</span>
         <span id="bulk-search-btn" title=" Search">🔍</span>
         <span id="secret-btn-kovalchyk" title=" ">·</span>
     </div>
@@ -574,6 +575,25 @@ function displayDiagonalStats(filtered) {
     });
 }
 
+    function startLiveClock() {
+    const clockElement = document.getElementById('live-clock');
+    
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    updateClock(); // Сразу отображаем время
+    setInterval(updateClock, 1000); // Обновляем каждую секунду
+}
+
+// Запускаем часы
+startLiveClock();
+    
 // ОСНОВНОЙ ПОИСК С ПРАВКОЙ НА ПУСТОТУ
 document.getElementById('search').onkeypress = async e => {
     if (e.key === 'Enter') {
