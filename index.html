@@ -43,7 +43,7 @@ background-color: rgba(17,17,17,0.7);
 border-bottom: 1px solid rgba(0, 128, 128, 0.3);
 }
 
-/* Сделали заголовок интерактивным */
+/* Кнопка-заголовок */
 #fit-screen-btn {
 margin:0;
 color:#008080;
@@ -144,14 +144,27 @@ font-size:16px;
 cursor:pointer;
 }
 
-/* --- КОМПАКТНЫЙ РЕЖИМ (ПОДГОНКА ПОД ЭКРАН) --- */
+/* --- КОМПАКТНЫЙ РЕЖИМ С ВЕРТИКАЛЬНЫМ СКРОЛЛОМ --- */
+.table-wrapper.compact-mode {
+max-height: 75vh; /* Ограничиваем высоту (75% от экрана) */
+overflow-y: auto; /* Включаем вертикальный скролл */
+}
+
 .compact-mode table {
-min-width: 100%; /* Отменяем жесткую ширину */
+min-width: 100%; 
+}
+
+.compact-mode th {
+position: sticky;
+top: 0;
+z-index: 10; /* Чтобы шапка всегда была поверх строк */
+background-color: #006666; /* Непрозрачный фон, чтобы строки не просвечивали при скролле */
+color: #fff;
 }
 
 .compact-mode th, .compact-mode td {
-padding: 4px 2px; /* Уменьшаем отступы */
-font-size: 11px; /* Уменьшаем шрифт, чтобы всё влезло */
+padding: 4px 2px;
+font-size: 11px;
 word-break: break-word;
 }
 
@@ -314,7 +327,7 @@ text-shadow: 0 0 8px #0ff;
 <div id="search-result"></div>
 </div>
 
-<div class="table-container">
+<div class="table-container" id="overview-section">
 <button id="overview-toggle" class="toggle-btn"> </button>
 <div id="overview-block">
 <div class="table-header">
@@ -558,12 +571,22 @@ if(bulkSearchBtn) {
     };
 }
 
-// ДОБАВЛЕНА ЛОГИКА ДЛЯ ПОДГОНКИ ТАБЛИЦЫ ПО КЛИКУ НА ЗАГОЛОВОК
+// ЛОГИКА ДЛЯ ПОДГОНКИ ТАБЛИЦЫ И СКРОЛЛА
 const fitScreenBtn = document.getElementById('fit-screen-btn');
 const overviewTableWrapper = document.getElementById('overview-table-wrapper');
-if(fitScreenBtn && overviewTableWrapper) {
+const overviewSection = document.getElementById('overview-section');
+
+if(fitScreenBtn && overviewTableWrapper && overviewSection) {
     fitScreenBtn.onclick = () => {
+        // Переключаем режим
         overviewTableWrapper.classList.toggle('compact-mode');
+        
+        // Если режим включен, плавно скроллим страницу к таблице
+        if (overviewTableWrapper.classList.contains('compact-mode')) {
+            setTimeout(() => {
+                overviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50); // Микро-задержка, чтобы браузер успел применить CSS
+        }
     };
 }
 
