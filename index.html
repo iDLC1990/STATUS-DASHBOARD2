@@ -43,10 +43,19 @@ background-color: rgba(17,17,17,0.7);
 border-bottom: 1px solid rgba(0, 128, 128, 0.3);
 }
 
-.header h1 {
+/* Сделали заголовок интерактивным */
+#fit-screen-btn {
 margin:0;
 color:#008080;
 font-size:24px;
+cursor: pointer;
+user-select: none;
+transition: text-shadow 0.3s;
+}
+
+#fit-screen-btn:hover {
+text-shadow: 0 0 10px #0ff;
+color: #0ff;
 }
 
 .date-info {
@@ -70,10 +79,9 @@ border-radius:10px 10px 0 0;
 display: flex;
 justify-content: space-between;
 align-items: center;
-position: relative; /* Добавлено для позиционирования часов */
+position: relative;
 }
 
-/* Добавлен стиль для центрирования и оформления часов */
 #live-clock {
 position: absolute;
 left: 50%;
@@ -99,19 +107,20 @@ transition: 0.3s;
     text-shadow: 0 0 8px #0ff;
 }
 
-/* Добавлена обертка для скролла на мобильных */
 .table-wrapper {
 width: 100%;
 overflow-x: auto;
 -webkit-overflow-scrolling: touch;
 background-color:#5555559e;
 border-radius:0 0 10px 10px;
+transition: all 0.3s ease;
 }
 
 table {
 width:100%;
 border-collapse:collapse;
-min-width: 600px; /* Таблица не будет сжиматься меньше 600px */
+min-width: 600px;
+transition: all 0.3s ease;
 }
 
 table, th, td {
@@ -121,6 +130,7 @@ border:1px solid #fff;
 th, td {
 padding:10px;
 text-align:center;
+transition: all 0.3s ease;
 }
 
 th {
@@ -132,6 +142,17 @@ background: rgba(0, 128, 128, 0.2);
 td {
 font-size:16px;
 cursor:pointer;
+}
+
+/* --- КОМПАКТНЫЙ РЕЖИМ (ПОДГОНКА ПОД ЭКРАН) --- */
+.compact-mode table {
+min-width: 100%; /* Отменяем жесткую ширину */
+}
+
+.compact-mode th, .compact-mode td {
+padding: 4px 2px; /* Уменьшаем отступы */
+font-size: 11px; /* Уменьшаем шрифт, чтобы всё влезло */
+word-break: break-word;
 }
 
 .total-row {
@@ -170,7 +191,6 @@ border:2px solid #0ff;
 background-color:#333;
 }
 
-/* Мигалка */
 @keyframes blink-active {
   0% { background-color: rgba(0, 128, 128, 0.3); }
   50% { background-color: rgba(0, 255, 255, 0.6); }
@@ -183,7 +203,6 @@ background-color:#333;
   font-weight: bold;
 }
 
-/* Модалка */
 #modal {
 display:none;
 position:fixed;
@@ -279,14 +298,14 @@ text-shadow: 0 0 8px #0ff;
 @media (max-width: 900px) {
 .table-container { width:95%; }
 .header { padding:12px 4%; }
-.header h1 { font-size: 18px; }
+#fit-screen-btn { font-size: 18px; }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-<h1>LCDR LIVE DATA 2026</h1>
+<h1 id="fit-screen-btn" title="Нажми для подгонки таблицы">LCDR LIVE DATA 2026</h1>
 <div class="date-info" id="date-info">DATE: --</div>
 </div>
 
@@ -308,7 +327,7 @@ text-shadow: 0 0 8px #0ff;
         <span id="secret-btn-kovalchyk" title=" ">·</span>
     </div>
 </div>
-<div class="table-wrapper">
+<div id="overview-table-wrapper" class="table-wrapper">
 <table id="combined-table">
 <thead>
 <tr>
@@ -538,6 +557,16 @@ if(bulkSearchBtn) {
         };
     };
 }
+
+// ДОБАВЛЕНА ЛОГИКА ДЛЯ ПОДГОНКИ ТАБЛИЦЫ ПО КЛИКУ НА ЗАГОЛОВОК
+const fitScreenBtn = document.getElementById('fit-screen-btn');
+const overviewTableWrapper = document.getElementById('overview-table-wrapper');
+if(fitScreenBtn && overviewTableWrapper) {
+    fitScreenBtn.onclick = () => {
+        overviewTableWrapper.classList.toggle('compact-mode');
+    };
+}
+
 function openModal(name) {
     const dInfoText = document.getElementById('date-info').textContent;
     const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
