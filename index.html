@@ -85,13 +85,34 @@ max-width: none !important;
 width: 90%;
 max-height: 85vh;
 display: block !important;
+overflow-y: auto; /* ФИКС: включаем прокрутку, если таблица слишком высокая */
+scrollbar-width: thin; /* Скроллбар для Firefox */
+scrollbar-color: #008080 rgba(0, 0, 0, 0.3);
+border-radius: 10px;
+box-shadow: 0 0 30px rgba(0, 128, 128, 0.5);
+}
+
+/* Стилизация скроллбара для Chrome, Edge и Safari */
+.fullscreen-mode #overview-block::-webkit-scrollbar {
+    width: 8px;
+}
+.fullscreen-mode #overview-block::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0 10px 10px 0;
+}
+.fullscreen-mode #overview-block::-webkit-scrollbar-thumb {
+    background: #008080;
+    border-radius: 4px;
+}
+.fullscreen-mode #overview-block::-webkit-scrollbar-thumb:hover {
+    background: #00ffff;
 }
 
 .fullscreen-mode table {
 width: 100%;
-font-size: 1.15vw; /* Шрифт подстраивается под ширину экрана */
-box-shadow: 0 0 30px rgba(0, 128, 128, 0.5);
+font-size: 1.05vw; /* ФИКС: чуть уменьшили шрифт, чтобы влезало больше строк */
 background-color: rgba(20, 20, 20, 0.95);
+margin: 0;
 }
 
 /* Фикс шрифта для маленьких экранов в режиме фокуса */
@@ -558,7 +579,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych dla wybranego pracownika na dzisiaj.</p>";
+        modalBody.innerHTML = "<p>Brak danych dla wyбранного работника на сегодня.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
