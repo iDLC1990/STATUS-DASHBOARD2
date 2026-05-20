@@ -55,7 +55,7 @@ font-size:18px;
 font-weight: bold;
 }
 
-/* --- ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ АДАПТИВНОСТИ И ЦЕНТРИРОВАНИЯ --- */
+/* --- ОБНОВЛЕННЫЕ СТИЛИ: ИДЕАЛЬНАЯ ПОДГОНКА БЕЗ СКРОЛЛА --- */
 .table-container {
 width: 95%;
 max-width: 1400px;
@@ -63,7 +63,6 @@ margin: 24px auto;
 transition: all 0.4s ease-in-out;
 }
 
-/* Класс, который включается при клике на заголовок */
 .fullscreen-mode {
 position: fixed !important;
 top: 0 !important;
@@ -71,53 +70,52 @@ left: 0 !important;
 width: 100vw !important;
 height: 100vh !important;
 z-index: 9999 !important;
-background: rgba(0, 0, 0, 0.0) !important; /* Полупрозрачный фон */
-backdrop-filter: blur(0px); /* Размытие заднего фона */
+background: rgba(0, 0, 0, 0.4) !important;
+backdrop-filter: blur(8px);
 display: flex !important;
 flex-direction: column !important;
-justify-content: center !important; /* Центр по вертикали */
-align-items: center !important;     /* Центр по горизонтали */
+justify-content: center !important;
+align-items: center !important;
 margin: 0 !important;
 max-width: none !important;
+overflow: hidden !important;
 }
 
 .fullscreen-mode #overview-block {
-width: 90%;
-max-height: 85vh;
-display: block !important;
-overflow-y: auto; /* ФИКС: включаем прокрутку, если таблица слишком высокая */
-scrollbar-width: thin; /* Скроллбар для Firefox */
-scrollbar-color: #008080 rgba(0, 0, 0, 0.3);
+width: 95vw !important;
+height: 95vh !important; /* Строго 95% от высоты экрана */
+display: flex !important;
+flex-direction: column !important;
+overflow: hidden !important; /* Никакого скролла */
 border-radius: 10px;
 box-shadow: 0 0 30px rgba(0, 128, 128, 0.5);
 }
 
-/* Стилизация скроллбара для Chrome, Edge и Safari */
-.fullscreen-mode #overview-block::-webkit-scrollbar {
-    width: 8px;
-}
-.fullscreen-mode #overview-block::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 0 10px 10px 0;
-}
-.fullscreen-mode #overview-block::-webkit-scrollbar-thumb {
-    background: #008080;
-    border-radius: 4px;
-}
-.fullscreen-mode #overview-block::-webkit-scrollbar-thumb:hover {
-    background: #00ffff;
+/* Шапка не сжимается */
+.fullscreen-mode .table-header {
+flex-shrink: 0; 
+padding: 1.5vh 2vw !important;
 }
 
+/* Таблица занимает все оставшееся место по вертикали */
 .fullscreen-mode table {
-width: 100%;
-font-size: 1.05vw; /* ФИКС: чуть уменьшили шрифт, чтобы влезало больше строк */
+flex-grow: 1; 
+height: 100% !important; 
 background-color: rgba(20, 20, 20, 0.95);
 margin: 0;
 }
 
-/* Фикс шрифта для маленьких экранов в режиме фокуса */
+/* Умные ячейки: шрифты и отступы зависят от высоты экрана */
+.fullscreen-mode th, 
+.fullscreen-mode td {
+padding: 0.3vh 1vw !important; /* Сжимаем вертикальный отступ */
+font-size: min(1.2vw, 2.5vh) !important; /* Шрифт адаптируется под высоту */
+height: 1% !important; /* CSS-трюк: равномерно делит высоту между всеми строками */
+}
+
 @media (max-width: 1200px) {
-    .fullscreen-mode table { font-size: 14px; }
+    .fullscreen-mode th, 
+    .fullscreen-mode td { font-size: min(14px, 2.5vh) !important; }
 }
 /* --- КОНЕЦ ОБНОВЛЕННЫХ СТИЛЕЙ --- */
 
@@ -447,346 +445,3 @@ async function fetchAndCacheData() {
     } catch (e) {
         console.error("Buffer update failed:", e);
         return false;
-    }
-}
-
-function parseDatePart(val) {
-    if (!val) return null;
-    const first = val.split(' ')[0].trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(first)) return new Date(first);
-    if (/^\d{2}\.\d{2}\.\d{4}$/.test(first)) {
-        const [d,m,y] = first.split('.');
-        return new Date(`${y}-${m}-${d}`);
-    }
-    const parsed = Date.parse(first);
-    return isNaN(parsed) ? null : new Date(parsed);
-}
-
-function getLastDate(data) {
-    const dates = data.map(r => parseDatePart(r.date)).filter(d => d instanceof Date && !isNaN(d));
-    return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
-}
-
-const modal = document.getElementById('modal');
-const modalBody = document.getElementById('modal-body');
-const modalClose = document.getElementById('modal-close');
-
-if(modalClose) modalClose.onclick = () => modal.classList.remove('show');
-if(modal) modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
-
-const secretBtn = document.getElementById('secret-btn-kovalchyk');
-if(secretBtn) {
-    secretBtn.onclick = () => {
-        const dInfoText = document.getElementById('date-info').textContent;
-        const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
-        
-        const records = combinedDataCache.filter(r => {
-            const recordDate = parseDatePart(r.date);
-            const isSameDay = recordDate && recordDate.toISOString().split('T')[0] === lastDateStr;
-            return r.inspector === 'KOVALCHYK Y.' && 
-                   isSameDay && 
-                   ['OK','NDF','SCRAP TTL'].includes(r.status) &&
-                   r.type !== 'MNT';
-        });
-
-        if (!records.length) return;
-
-        const textToCopy = records.map(r => r.serial).join('\n');
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const oldSymbol = secretBtn.textContent;
-            secretBtn.textContent = "✓";
-            setTimeout(() => secretBtn.textContent = oldSymbol, 1200);
-        });
-    };
-}
-
-const bulkSearchBtn = document.getElementById('bulk-search-btn');
-if(bulkSearchBtn) {
-    bulkSearchBtn.onclick = () => {
-        if(!modalBody || !modal) return;
-        modalBody.innerHTML = `
-            <h3 style="color:#0ff; margin-top:0;">Bulk Search</h3>
-            <textarea id="bulk-input" placeholder="Wklej numery SN rozdzielone enterem..."></textarea>
-            <button id="run-bulk-search">SZUKAJ</button>
-            <div id="bulk-result" style="margin-top:20px;"></div>
-        `;
-        modal.classList.add('show');
-
-        document.getElementById('run-bulk-search').onclick = () => {
-            const inputVal = document.getElementById('bulk-input').value;
-            const snList = inputVal.split('\n').map(s => s.trim()).filter(s => s !== "");
-            if(!snList.length) return;
-
-            const groups = {};  
-            const notFound = [];
- 
-            snList.forEach(sn => {
-                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
-                if(matches.length) {
-                    matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
-                    const record = matches[0];
-                    const wName = record.name || 'UNKNOWN';
-                    if(!groups[wName]) groups[wName] = [];
-                    groups[wName].push(record);
-                } else {
-                    notFound.push(sn);
-                }
-            });
- 
-            const sortedNames = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
- 
-            let resHtml = "";
- 
-            sortedNames.forEach(name => {
-                resHtml += `
-                <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
-                    <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold; color: #0ff;">
-                        ${name} — [${groups[name].length} ]
-                    </summary>
-                    <table style="width: 100%; border-collapse: collapse; background: #222;">
-                        <tr style="background: #333;">
-                            <th>Serial</th><th>Data</th><th>Status</th><th>Info</th>
-                        </tr>
-                        ${groups[name].map(r => `
-                            <tr>
-                                <td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.comment}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </details>`;
-            });
-
-            if(notFound.length > 0) {
-                resHtml += `
-                <details style="margin-top: 20px; border: 1px solid #ff5555; border-radius: 5px;">
-                    <summary style="padding: 10px; cursor: pointer; background: rgba(255, 85, 85, 0.2); color: #ff5555; font-weight: bold;">
-                        NIE ZNALEZIONO — [${notFound.length} ]
-                    </summary>
-                    <div style="padding: 10px; color: #ff5555;">
-                        ${notFound.join(', ')}
-                    </div>
-                </details>`;
-            }
-
-            document.getElementById('bulk-result').innerHTML = resHtml || "<p>NIE ZNALEZIONO</p>";
-        };
-    };
-}
-
-function openModal(name) {
-    const dInfoText = document.getElementById('date-info').textContent;
-    const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
-    const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
-
-    if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych dla wyбранного работника на сегодня.</p>";
-    } else {
-        let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
-        records.forEach(r => {
-            html += `<tr><td>${r.serial || '--'}</td><td>${r.type || '--'}</td><td>${r.status || '--'}</td><td>${r.ocAfterRepair || '--'}</td><td>${r.comment || '--'}</td></tr>`;
-        });
-        modalBody.innerHTML = html + '</table>';
-    }
-    modal.classList.add('show');
-}
-
-function displayCombinedStats(filtered) {
-    const stats = {};
-    let tNDF=0, tOK=0, tWAIT=0, tTTL=0, tPNLA=0, gTotal=0;
-    filtered.forEach(r => {
-        const n = r.name || 'UNKNOWN';
-        if (!stats[n]) stats[n] = { NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0 };
-        if (r.status === "NDF") { stats[n].NDF++; tNDF++; }
-        if (r.status === "OK") { stats[n].OK++; tOK++; }
-        if (r.status === "WAITING") { stats[n].WAITING++; tWAIT++; }
-        if (r.status === "SCRAP TTL") { stats[n]["SCRAP TTL"]++; tTTL++; }
-        if (r.status === "SCRAP PNLA") { stats[n]["SCRAP PNLA"]++; tPNLA++; }
-        stats[n].total++; gTotal++;
-    });
-    const tbody = document.querySelector('#combined-table tbody');
-    tbody.innerHTML = "";
-    Object.keys(stats).sort().forEach(name => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td onclick="openModal('${name}')">${name}</td><td>${stats[name].NDF}</td><td>${stats[name].OK}</td><td>${stats[name].WAITING}</td><td>${stats[name]['SCRAP TTL']}</td><td>${stats[name]['SCRAP PNLA']}</td><td class="sum-col">${stats[name].total}</td>`;
-        tbody.appendChild(row);
-    });
-    const tr = document.createElement('tr'); tr.className = "total-row";
-    tr.innerHTML = `<td>TOTAL</td><td>${tNDF}</td><td>${tOK}</td><td>${tWAIT}</td><td>${tTTL}</td><td>${tPNLA}</td><td class="sum-col">${gTotal}</td>`;
-    tbody.appendChild(tr);
-}
-
-function displayDiagonalStats(filtered) {
-    const diagStats = {};
-    filtered.forEach(({name, serial, status}) => {
-        if (status !== "OK" && status !== "NDF") return;
-        const diag = extractDiagonal(serial); if (!diag) return;
-        const nm = name || 'UNKNOWN';
-        if (!diagStats[nm]) diagStats[nm] = {};
-        diagStats[nm][diag] = (diagStats[nm][diag] || 0) + 1;
-    });
-    const tbody = document.querySelector('#diag-table tbody');
-    const thead = document.querySelector('#diag-table thead');
-    const allDiagonals = [...new Set(Object.values(diagStats).flatMap(o => Object.keys(o)))].map(Number).sort((a,b)=>a-b);
-    thead.innerHTML = `<tr><th>NAME</th>${allDiagonals.map(d => `<th>${d}</th>`).join('')}<th class="sum-col">SUMA</th></tr>`;
-    tbody.innerHTML = '';
-    Object.entries(diagStats).sort().forEach(([name, diags]) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
-        tbody.appendChild(row);
-    });
-}
-
-function startLiveClock() {
-    const clockElement = document.getElementById('live-clock');
-    function updateClock() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        clockElement.textContent = `${hours}:${minutes}:${seconds}`;
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-}
-
-startLiveClock();
-    
-document.getElementById('search').onkeypress = async e => {
-    if (e.key === 'Enter') {
-        const serial = e.target.value.trim();
-        const output = document.getElementById('search-result');
-        if (!serial) {
-            output.innerHTML = "";
-            return;
-        }
-        const matches = combinedDataCache.filter(r => (r.serial || '').trim() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
-        if (matches.length) {
-            output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
-            <tbody>${matches.map((d, i) => `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`).join('')}</tbody></table>`;
-        } else { 
-            output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
-        }
-    }
-};
-
-async function updateStats() {
-    if (await fetchAndCacheData()) {
-        const lastDate = getLastDate(combinedDataCache);
-        const lastDateStr = lastDate.toISOString().split('T')[0];
-        document.getElementById('date-info').textContent = `DATE: ${lastDateStr}`;
-        const filtered = combinedDataCache.filter(r => (r.date || '').split(' ')[0] === lastDateStr);
-        displayCombinedStats(filtered);
-        displayDiagonalStats(filtered);
-    }
-}
-
-document.getElementById('overview-toggle').onclick = () => { 
-    const b = document.getElementById('overview-block'); 
-    b.style.display = (window.getComputedStyle(b).display === 'none') ? 'block' : 'none'; 
-};
-document.getElementById('diag-toggle').onclick = () => { 
-    const b = document.getElementById('diag-block'); 
-    b.style.display = (window.getComputedStyle(b).display === 'none') ? 'block' : 'none'; 
-};
-
-updateStats();
-setInterval(updateStats, 60000);
-
-const backgrounds = [
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg",
-"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg"
-];
-let bgIndex = 0;
-setInterval(() => {
-    bgIndex = (bgIndex + 1) % backgrounds.length;
-    document.body.style.background = `url('${backgrounds[bgIndex]}') no-repeat center center fixed`;
-    document.body.style.backgroundSize = "cover";
-}, 180000);
-
-window.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        if (e.key === 'Escape') modal.classList.remove('show');
-        return;
-    }
-    if (e.altKey) {
-        if (e.code === 'Digit1' || e.key === '1') {
-            e.preventDefault();
-            const b = document.getElementById('overview-block');
-            const isHidden = window.getComputedStyle(b).display === 'none';
-            b.style.display = isHidden ? 'block' : 'none';
-        }
-        if (e.code === 'Digit2' || e.key === '2') {
-            e.preventDefault();
-            const b = document.getElementById('diag-block');
-            b.parentElement.style.display = 'block';
-            const isHidden = window.getComputedStyle(b).display === 'none';
-            b.style.display = isHidden ? 'block' : 'none';
-        }
-    }
-    if (e.key === 'Escape') {
-        modal.classList.remove('show');
-    }
-}, true);  
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('SW Registered!', reg))
-      .catch(err => console.log('SW Error:', err));
-  });
-}
-
-/* --- ИСПРАВЛЕННАЯ ЛОГИКА ЦЕНТРИРОВАНИЯ ПРИ КЛИКЕ --- */
-document.getElementById('main-title').onclick = () => {
-    const overviewContainer = document.getElementById('overview-block').parentElement;
-    const diagContainer = document.getElementById('diag-block').parentElement;
-
-    if (!overviewContainer.classList.contains('fullscreen-mode')) {
-        // ВКЛЮЧАЕМ РЕЖИМ ФОКУСА
-        overviewContainer.classList.add('fullscreen-mode');
-        if(diagContainer) diagContainer.style.display = 'none'; // Скрываем остальное
-        document.body.style.overflow = 'hidden'; // Запрещаем скролл фона
-    } else {
-        // ВЫКЛЮЧАЕМ РЕЖИМ ФОКУСА
-        overviewContainer.classList.remove('fullscreen-mode');
-        if(diagContainer) diagContainer.style.display = 'block';
-        document.body.style.overflow = 'auto'; // Возвращаем скролл
-    }
-};
-</script>
-</body>
-</html>
