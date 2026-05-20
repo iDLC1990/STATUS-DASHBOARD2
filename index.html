@@ -71,7 +71,8 @@ left: 0 !important;
 width: 100vw !important;
 height: 100vh !important;
 z-index: 9999 !important;
-background: rgba(0, 0, 0, 0.9) !important;
+background: rgba(0, 0, 0, 0.4) !important; /* Полупрозрачный фон */
+backdrop-filter: blur(8px); /* Размытие заднего фона */
 display: flex !important;
 flex-direction: column !important;
 justify-content: center !important; /* Центр по вертикали */
@@ -557,7 +558,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych для выбранного работника на сегодня.</p>";
+        modalBody.innerHTML = "<p>Brak danych dla wybranego pracownika na dzisiaj.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
