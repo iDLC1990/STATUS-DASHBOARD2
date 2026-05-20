@@ -543,11 +543,11 @@ if(bulkSearchBtn) {
                     </summary>
                     <table style="width: 100%; border-collapse: collapse; background: #222;">
                         <tr style="background: #333;">
-                            <th>Serial</th><th>Data</th><th>FI NAME</th><th>OC AFTER REPAIR</th><th>Status</th><th>Info</th>
+                            <th>Serial</th><th>Data</th><th>Status</th><th>FI NAME</th><th>OC AFTER REPAIR</th><th>Info</th>
                         </tr>
                         ${groups[name].map(r => `
                             <tr>
-                                <td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td><td>${r.comment}</td>
+                                <td>${r.serial}</td><td>${r.date}</td><td>${r.status}</td></td>${r.FI NAME}</td><th>${r.OC AFTER REPAIR}</th><td>${r.comment}</td>
                             </tr>
                         `).join('')}
                     </table>
