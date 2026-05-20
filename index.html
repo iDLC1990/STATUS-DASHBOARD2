@@ -549,7 +549,9 @@ if(bulkSearchBtn) {
                                 <th style="border: 1px solid #fff; padding: 10px;">Serial</th>
                                 <th style="border: 1px solid #fff; padding: 10px;">Data</th>
                                 <th style="border: 1px solid #fff; padding: 10px;">Status</th>
-                                <th style="border: 1px solid #fff; padding: 10px;">Finalna</th> <th style="border: 1px solid #fff; padding: 10px;">OC</th>      <th style="border: 1px solid #fff; padding: 10px;">Info</th>
+                                <th style="border: 1px solid #fff; padding: 10px;">Finalna</th> 
+                                <th style="border: 1px solid #fff; padding: 10px;">OC</th>   
+                                <th style="border: 1px solid #fff; padding: 10px;">Info</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -559,7 +561,7 @@ if(bulkSearchBtn) {
                                 <td style="border: 1px solid #fff; padding: 10px; text-align: center;">${r.date}</td>
                                 <td style="border: 1px solid #fff; padding: 10px; text-align: center;">${r.status}</td>
                                 <td style="border: 1px solid #fff; padding: 10px; text-align: center;">${r.nameG || ' '}</td>
-                                <td style="border: 1px solid #fff; padding: 10px; text-align: center; color: #0ff; font-weight: bold;">${r.ocAfterRepair || ' '}</td>
+                                <td style="border: 1px solid #fff; padding: 10px; text-align: center;">${r.ocAfterRepair || ' '}</td>
                                 <td style="border: 1px solid #fff; padding: 10px; text-align: center;">${r.comment}</td>
                             </tr>
                         `).join('')}
