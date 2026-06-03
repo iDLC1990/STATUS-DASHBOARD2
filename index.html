@@ -535,8 +535,6 @@ if(bulkSearchBtn) {
  
             let resHtml = "";
  
-            // Найди внутри bulkSearchBtn.onclick цикл sortedNames.forEach и замени его на этот:
-
             sortedNames.forEach(name => {
                 resHtml += `
                 <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
@@ -607,6 +605,7 @@ function openModal(name) {
 function displayCombinedStats(filtered) {
     const stats = {};
     let tNDF=0, tOK=0, tWAIT=0, tTTL=0, tPNLA=0, gTotal=0;
+    
     filtered.forEach(r => {
         const n = r.name || 'UNKNOWN';
         if (!stats[n]) stats[n] = { NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0 };
@@ -617,14 +616,20 @@ function displayCombinedStats(filtered) {
         if (r.status === "SCRAP PNLA") { stats[n]["SCRAP PNLA"]++; tPNLA++; }
         stats[n].total++; gTotal++;
     });
+    
     const tbody = document.querySelector('#combined-table tbody');
     tbody.innerHTML = "";
-    Object.keys(stats).sort().forEach(name => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td onclick="openModal('${name}')">${name}</td><td>${stats[name].NDF}</td><td>${stats[name].OK}</td><td>${stats[name].WAITING}</td><td>${stats[name]['SCRAP TTL']}</td><td>${stats[name]['SCRAP PNLA']}</td><td class="sum-col">${stats[name].total}</td>`;
-        tbody.appendChild(row);
-    });
-    const tr = document.createElement('tr'); tr.className = "total-row";
+    
+    Object.entries(stats)
+        .sort((a, b) => a[1].OK - b[1].OK)
+        .forEach(([name, data]) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td onclick="openModal('${name}')">${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
+            tbody.appendChild(row);
+        });
+        
+    const tr = document.createElement('tr'); 
+    tr.className = "total-row";
     tr.innerHTML = `<td>TOTAL</td><td>${tNDF}</td><td>${tOK}</td><td>${tWAIT}</td><td>${tTTL}</td><td>${tPNLA}</td><td class="sum-col">${gTotal}</td>`;
     tbody.appendChild(tr);
 }
