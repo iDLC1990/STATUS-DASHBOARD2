@@ -512,14 +512,16 @@ if(bulkSearchBtn) {
 
         document.getElementById('run-bulk-search').onclick = () => {
             const inputVal = document.getElementById('bulk-input').value;
-            const snList = inputVal.split('\n').map(s => s.trim()).filter(s => s !== "");
+            // Приводим все серийники из ввода к верхнему регистру
+            const snList = inputVal.split('\n').map(s => s.trim().toUpperCase()).filter(s => s !== "");
             if(!snList.length) return;
 
             const groups = {};  
             const notFound = [];
  
             snList.forEach(sn => {
-                const matches = combinedDataCache.filter(r => (r.serial || '').trim() === sn);
+                // Приводим r.serial из кэша к верхнему регистру перед сравнением
+                const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === sn);
                 if(matches.length) {
                     matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
                     const record = matches[0];
@@ -672,13 +674,15 @@ startLiveClock();
     
 document.getElementById('search').onkeypress = async e => {
     if (e.key === 'Enter') {
-        const serial = e.target.value.trim();
+        // Приводим поисковый запрос к верхнему регистру
+        const serial = e.target.value.trim().toUpperCase();
         const output = document.getElementById('search-result');
         if (!serial) {
             output.innerHTML = "";
             return;
         }
-        const matches = combinedDataCache.filter(r => (r.serial || '').trim() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
+        // Приводим r.serial к верхнему регистру перед сравнением
+        const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
         if (matches.length) {
             output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
             <tbody>${matches.map((d, i) => `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`).join('')}</tbody></table>`;
