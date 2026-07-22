@@ -318,6 +318,34 @@ text-shadow: 0 0 8px #0ff;
 .header { padding:12px 0%; }
 .header h1 { font-size: 12px; }
 }
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ КОРОЛЯ --- */
+@keyframes rgb-text {
+  0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
+  33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
+  66% { color: #0000ff; text-shadow: 0 0 8px #0000ff; }
+  100% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
+}
+
+.king-user {
+    font-weight: bold !important;
+    position: relative;
+    animation: rgb-text 3s infinite linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Отступ между короной и именем */
+}
+
+/* Добавляем корону перед именем */
+.king-user::before {
+    content: "👑"; 
+    font-size: 1.2em;
+    animation: none; /* Корона не переливается, она золотая */
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+}
+/* --------------------------------- */
+
 </style>
 </head>
 <body>
@@ -538,10 +566,12 @@ if(bulkSearchBtn) {
             let resHtml = "";
  
             sortedNames.forEach(name => {
+                // ПРАВКА: Добавляем класс короля в масс поиск
+                const kingClass = (name === 'KOVALCHYK Y.') ? 'king-user' : '';
                 resHtml += `
                 <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
-                    <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold; color: #0ff;">
-                        ${name} — [${groups[name].length}]
+                    <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold;">
+                        <span class="${kingClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
                     </summary>
                     <table style="width: 100%; border-collapse: collapse; background: #222;">
                         <thead>
@@ -593,7 +623,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych dla wybranego pracownika na dzisiaj.</p>";
+        modalBody.innerHTML = "<p>Brak danych dla wyбранego работника на dzisiaj.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
@@ -626,7 +656,11 @@ function displayCombinedStats(filtered) {
         .sort((a, b) => a[1].OK - b[1].OK)
         .forEach(([name, data]) => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td onclick="openModal('${name}')">${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
+            
+            // ПРАВКА: Проверка на короля и добавление класса
+            const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
+            
+            row.innerHTML = `<td onclick="openModal('${name}')" ${nameClass}>${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
             tbody.appendChild(row);
         });
         
@@ -652,7 +686,11 @@ function displayDiagonalStats(filtered) {
     tbody.innerHTML = '';
     Object.entries(diagStats).sort().forEach(([name, diags]) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
+        
+        // ПРАВКА: Класс короля для таблицы диагоналей
+        const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
+        
+        row.innerHTML = `<td ${nameClass}>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
         tbody.appendChild(row);
     });
 }
@@ -685,7 +723,11 @@ document.getElementById('search').onkeypress = async e => {
         const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
         if (matches.length) {
             output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
-            <tbody>${matches.map((d, i) => `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td>${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`).join('')}</tbody></table>`;
+            <tbody>${matches.map((d, i) => {
+                // ПРАВКА: Класс короля в результатах поиска
+                const kingClass = (d.name === 'KOVALCHYK Y.') ? 'king-user' : '';
+                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${kingClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
+            }).join('')}</tbody></table>`;
         } else { 
             output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
         }
