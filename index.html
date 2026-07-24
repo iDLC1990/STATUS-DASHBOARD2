@@ -319,7 +319,7 @@ text-shadow: 0 0 8px #0ff;
 .header h1 { font-size: 12px; }
 }
 
-/* --- НОВЫЕ СТИЛИ ДЛЯ ИКОНОК --- */
+/* --- НОВЫЕ СТИЛИ ДЛЯ КОРОЛЯ --- */
 @keyframes rgb-text {
   0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
   33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
@@ -327,28 +327,17 @@ text-shadow: 0 0 8px #0ff;
   100% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
 }
 
-/* Король: переливается + корона */
 .king-user {
     font-weight: bold !important;
     animation: rgb-text 3s infinite linear;
 }
 
+/* Добавляем корону перед именем */
 .king-user::before {
     content: "👑 "; 
     font-size: 1.2em;
-    animation: none; 
+    animation: none; /* Корона не переливается, она золотая */
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
-}
-
-/* Цветочек для POKALCHUK A. */
-.flower-user {
-    font-weight: bold !important;
-}
-
-.flower-user::before {
-    content: "🌸 "; /* Можно использовать 🌺 или 🌸 */
-    font-size: 1.2em;
-    text-shadow: 0 0 5px rgba(255, 105, 180, 0.7);
 }
 /* --------------------------------- */
 
@@ -572,607 +561,12 @@ if(bulkSearchBtn) {
             let resHtml = "";
  
             sortedNames.forEach(name => {
-                // ПРАВКА: Иконки в масс поиск
-                let userClass = '';
-                if (name === 'KOVALCHYK Y.') userClass = 'king-user';
-                else if (name === 'POKALCHUK A.') userClass = 'flower-user';
-
+                // ПРАВКА: Добавляем класс короля в масс поиск
+                const kingClass = (name === 'KOVALCHYK Y.') ? 'king-user' : '';
                 resHtml += `
                 <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
                     <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold;">
-                        <span class="${userClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
-                    </summary>
-                    <table style="width: 100%; border-collapse: collapse; background: #222;">
-                        <thead>
-                            <tr style="background: #333;">
-                                <th style="border: 1px solid #fff; padding: 10px;">Serial</th>
-                                <th style="border: 1px solid #fff; padding: 10px;">Data</th>
-                                <th style="border: 1px solid #fff; padding: 10px;">Status</th>
-                                <th style="border: 1px solid #fff; padding: 10px;">Finalna</th> 
-                               ```html
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>LCDR LIVE DATA 2026</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="LCDR 2026">
-<meta name="theme-color" content="#008080">
-
-<style>
-body {
-background: url('[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg)')
-no-repeat center center fixed;
-background-size: cover;
-color:#fff;
-font-family: Arial, sans-serif;
-transition: background 1s ease-in-out;
-margin: 0;
-}
-
-body::before {
-content:"";
-position: fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background: rgba(0,0,0,0.5);
-z-index:-1;
-}
-
-.header {
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 10%;
-background-color: rgba(17,17,17,0.7);
-border-bottom: 1px solid rgba(0, 128, 128, 0.3);
-}
-
-.header h1 {
-margin:0;
-color:#008080;
-font-size:24px;
-}
-
-.date-info {
-color:#008080;
-font-size:18px;
-font-weight: bold;
-}
-
-/* --- ОБНОВЛЕННЫЕ СТИЛИ: ИДЕАЛЬНАЯ ПОДГОНКА БЕЗ СКРОЛЛА --- */
-.table-container {
-width: 95%;
-max-width: 1200px;
-margin: 24px auto;
-transition: all 0.4s ease-in-out;
-}
-
-.fullscreen-mode {
-position: fixed !important;
-top: 0 !important;
-left: 0 !important;
-width: 100vw !important;
-height: 90vh !important;
-z-index: 9999 !important;
-background: rgba(0, 0, 0, 0.4) !important;
-backdrop-filter: blur(8px);
-display: flex !important;
-flex-direction: column !important;
-justify-content: center !important;
-align-items: center !important;
-margin: 0 !important;
-max-width: none !important;
-overflow: hidden !important;
-}
-
-.fullscreen-mode #overview-block {
-width: 90vw !important;
-height: 90vh !important; /* Строго 95% от высоты экрана */
-display: flex !important;
-flex-direction: column !important;
-overflow: hidden !important; /* Никакого скролла */
-border-radius: 10px;
-box-shadow: 0 0 30px rgba(0, 128, 128, 0.5);
-}
-
-/* Шапка не сжимается */
-.fullscreen-mode .table-header {
-flex-shrink: 0; 
-padding: 1.5vh 2vw !important;
-}
-
-/* Таблица занимает все оставшееся место по вертикали */
-.fullscreen-mode table {
-flex-grow: 1; 
-height: 100% !important; 
-background-color: rgba(20, 20, 20, 0.95);
-margin: 0;
-}
-
-/* Умные ячейки: шрифты и отступы зависят от высоты экрана */
-.fullscreen-mode th, 
-.fullscreen-mode td {
-padding: 0.3vh 1vw !important; /* Сжимаем вертикальный отступ */
-font-size: min(1.2vw, 2.5vh) !important; /* Шрифт адаптируется под высоту */
-height: 1% !important; /* CSS-трюк: равномерно делит высоту между всеми строками */
-}
-
-@media (max-width: 1200px) {
-    .fullscreen-mode th, 
-    .fullscreen-mode td { font-size: min(14px, 2.5vh) !important; }
-}
-/* --- КОНЕЦ ОБНОВЛЕННЫХ СТИЛЕЙ --- */
-
-.table-header {
-background-color:#008080;
-color:#000;
-font-weight:bold;
-font-size:18px;
-padding:10px 16px;
-border-radius:10px 10px 0 0;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-
-.toggle-btn {
-margin:8px 0;
-font-size:20px;
-cursor:pointer;
-background:none;
-border:none;
-color:#0ff;
-padding: 5px 10px;
-transition: 0.3s;
-}
-
-.toggle-btn:hover {
-    text-shadow: 0 0 8px #0ff;
-}
-
-table {
-width:100%;
-border-collapse:collapse;
-background-color:#5555559e;
-border-radius:0 0 10px 10px;
-}
-
-table, th, td {
-border:1px solid #fff;
-}
-
-th, td {
-padding:10px;
-text-align:center;
-}
-
-th {
-font-weight:bold;
-font-size:16px;
-background: rgba(0, 128, 128, 0.2);
-}
-
-td {
-font-size:16px;
-cursor:pointer;
-}
-
-.total-row {
-font-weight:bold;
-background-color:#333;
-color:#008080;
-}
-
-.sum-col {
-background-color: rgba(0,0,0,0.3);
-color:#0ff;
-font-weight: bold;
-}
-
-#search {
-width:100%;
-max-width: 600px;
-padding:12px;
-font-size:16px;
-border-radius:5px;
-border: 1px solid #008080;
-background: rgba(0,0,0,0.6);
-color: #fff;
-margin:20px auto;
-display:block;
-outline: none;
-}
-
-#search-result {
-margin-top:15px;
-}
-
-#search-result table {
-margin-top:10px;
-border:2px solid #0ff;
-background-color:#333;
-}
-
-@keyframes blink-active {
-  0% { background-color: rgba(0, 128, 128, 0.3); }
-  50% { background-color: rgba(0, 255, 255, 0.6); }
-  100% { background-color: rgba(0, 128, 128, 0.3); }
-}
-
-.latest-record {
-  animation: blink-active 1.5s infinite;
-  border: 2px solid #0ff !important;
-  font-weight: bold;
-}
-
-#modal {
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background: rgba(0,0,0,0.8);
-justify-content:center;
-align-items:center;
-z-index:10000;
-}
-
-#modal.show {
-display:flex;
-}
-
-#modal-content {
-background:#1a1a1a;
-color:#0ff;
-padding:20px;
-border:2px solid #008080;
-border-radius:10px;
-max-height:85%;
-overflow:auto;
-width:90%;
-max-width:1000px;
-box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-}
-
-#modal-close {
-background:#008080;
-color:#000;
-border:none;
-padding:8px 20px;
-cursor:pointer;
-font-weight:bold;
-margin-bottom:15px;
-border-radius: 4px;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-#bulk-search-btn {
-    cursor: pointer;
-    font-size: 20px;
-    opacity: 0.8;
-}
-
-#secret-btn-kovalchyk {
-cursor: pointer;
-opacity: 0.4;
-font-size: 20px;
-transition: all 0.3s;
-user-select: none;
-padding: 0 5px;
-color: #0ff;
-}
-
-#secret-btn-kovalchyk:hover {
-opacity: 1;
-text-shadow: 0 0 8px #0ff;
-}
-
-#bulk-input {
-    width: 100%;
-    height: 150px;
-    background: #000;
-    color: #0ff;
-    border: 1px solid #008080;
-    padding: 10px;
-    margin-top: 10px;
-    font-family: monospace;
-    resize: vertical;
-    box-sizing: border-box;
-}
-
-#run-bulk-search {
-    background: #008080;
-    color: #000;
-    border: none;
-    padding: 10px 25px;
-    margin-top: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 4px;
-}
-
-@media (max-width: 1080px) {
-.table-container { width:100%; }
-.header { padding:12px 0%; }
-.header h1 { font-size: 12px; }
-}
-
-/* --- НОВЫЕ СТИЛИ ДЛЯ ИКОНОК --- */
-@keyframes rgb-text {
-  0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-  33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
-  66% { color: #0000ff; text-shadow: 0 0 8px #0000ff; }
-  100% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-}
-
-/* Король: переливается + корона */
-.king-user {
-    font-weight: bold !important;
-    animation: rgb-text 3s infinite linear;
-}
-
-.king-user::before {
-    content: "👑 "; 
-    font-size: 1.2em;
-    animation: none; 
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
-}
-
-/* Цветочек для POKALCHUK A. */
-.flower-user {
-    font-weight: bold !important;
-}
-
-.flower-user::before {
-    content: "🌸 "; /* Можно использовать 🌺 или 🌸 */
-    font-size: 1.2em;
-    text-shadow: 0 0 5px rgba(255, 105, 180, 0.7);
-}
-/* --------------------------------- */
-
-</style>
-</head>
-<body>
-
-<div class="header">
-<h1 id="main-title" style="cursor: pointer; transition: 0.3s;" onmouseover="this.style.textShadow='0 0 10px #0ff'" onmouseout="this.style.textShadow='none'" title="Кликни, чтобы показать и подогнать таблицу">LCDR LIVE DATA 2026</h1>
-<div class="date-info" id="date-info">DATE: --</div>
-</div>
-
-<div class="table-container">
-<input type="text" id="search" placeholder="Podaj SN / pn czesci (Enter)">
-<div id="search-result"></div>
-</div>
-
-<div class="table-container">
-<button id="overview-toggle" class="toggle-btn"> </button>
-<div id="overview-block">
-<div class="table-header" style="position: relative;">
-    <span>FI Station Overview</span>
-    
-    <span id="live-clock" style="position: absolute; left: 50%; transform: translateX(-50%); color: #0ff; font-family: monospace; font-weight: bold; font-size: 20px;">00:00:00</span>
-    
-    <div class="header-actions">
-        <span id="bulk-search-btn" title=" Search">🔍</span>
-        <span id="secret-btn-kovalchyk" title=" ">·</span>
-    </div>
-</div>
-<table id="combined-table">
-<thead>
-<tr>
-<th>NAME</th>
-<th>NDF</th>
-<th>OK</th>
-<th>WAITING</th>
-<th>SCRAP TTL</th>
-<th>SCRAP PNLA</th>
-<th class="sum-col">SUMA</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
-
-<div class="table-container">
-<button id="diag-toggle" class="toggle-btn"> </button>
-<div id="diag-block">
-<div class="table-header">FI Station Diagonals</div>
-<table id="diag-table">
-<thead></thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
-
-<div id="modal">
-<div id="modal-content">
-<button id="modal-close">ZAMKNIJ</button>
-<div id="modal-body"></div>
-</div>
-</div>
-
-<script>
-const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
-const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
-
-let combinedDataCache = []; 
-
-const diagonalMapPrefix = {'WH8':55,'WC8':32,'WU0':43,'SQ1':43,'WM5':50,'WC7':32,'WP5':65,'WW1':75,'WM6':50};
-const diagonalMapSuffix = {'860':86,'850':85,'750':75,'700':70,'650':65,'580':58,'575':58,'550':55,'545':55,'500':50,'498':50,'495':50,'490':50,'438':43,'435':43,'430':43,'428':43,'425':43,'420':43,'418':43,'415':43,'398':43,'395':43,'390':43,'348':32,'345':32,'340':32,'328':32,'325':32,'320':32,'318':32,'315':32,'278':27,'275':27,'270':27,'248':24,'245':24,'240':24,'238':24,'235':24,'230':24};
-
-function extractDiagonal(serial) {
-    if (!serial) return null;
-    const s = serial.trim();
-    return diagonalMapPrefix[s.substring(0, 3)] || 
-           diagonalMapSuffix[s.substring(3, 6)] || 
-           diagonalMapSuffix[s.slice(-3)] || null;
-}
-
-function buildSheetURL(spreadsheetId, sheetName) {
-    return `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
-}
-
-async function getData(sheetName, spreadsheetId = sheetId) {
-    try {
-        const res = await fetch(buildSheetURL(spreadsheetId, sheetName));
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        return data.values || [];
-    } catch (e) {
-        console.error(`Fetch error ${sheetName}:`, e);
-        return null; 
-    }
-}
-
-async function fetchAndCacheData() {
-    try {
-        const [s1, s2, s3] = await Promise.all([
-            getData('FI Station KOVALCHYK Y.', sheetId),
-            getData('FI Station 2 ULANOVYCH.R', sheetId),
-            getData('2024', sheetIdArchive)
-        ]);
-
-        if (!s1 && !s2) return false;
-
-        const mapR = (r, insp) => ({
-            date: r[0] || "", 
-            serial: (r[2] || "").trim(), 
-            type: (r[3] || "").trim().toUpperCase(), 
-            status: r[4] || "",
-            name: r[5] || "", 
-            nameG: r[6] || "", 
-            ocAfterRepair: r[9] || "", 
-            comment: r[10] || "", 
-            inspector: insp
-        });
-
-        combinedDataCache = [
-            ...(s1 ? s1.slice(1) : []).map(r => mapR(r, 'KOVALCHYK Y.')),
-            ...(s2 ? s2.slice(1) : []).map(r => mapR(r, 'ULANOVYCH.R')),
-            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE'))
-        ];
-        return true;
-    } catch (e) {
-        console.error("Buffer update failed:", e);
-        return false;
-    }
-}
-
-function parseDatePart(val) {
-    if (!val) return null;
-    const first = val.split(' ')[0].trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(first)) return new Date(first);
-    if (/^\d{2}\.\d{2}\.\d{4}$/.test(first)) {
-        const [d,m,y] = first.split('.');
-        return new Date(`${y}-${m}-${d}`);
-    }
-    const parsed = Date.parse(first);
-    return isNaN(parsed) ? null : new Date(parsed);
-}
-
-function getLastDate(data) {
-    const dates = data.map(r => parseDatePart(r.date)).filter(d => d instanceof Date && !isNaN(d));
-    return dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
-}
-
-const modal = document.getElementById('modal');
-const modalBody = document.getElementById('modal-body');
-const modalClose = document.getElementById('modal-close');
-
-if(modalClose) modalClose.onclick = () => modal.classList.remove('show');
-if(modal) modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
-
-const secretBtn = document.getElementById('secret-btn-kovalchyk');
-if(secretBtn) {
-    secretBtn.onclick = () => {
-        const dInfoText = document.getElementById('date-info').textContent;
-        const lastDateStr = dInfoText.includes(':') ? dInfoText.split(':')[1].trim() : "";
-        
-        const records = combinedDataCache.filter(r => {
-            const recordDate = parseDatePart(r.date);
-            const isSameDay = recordDate && recordDate.toISOString().split('T')[0] === lastDateStr;
-            return r.inspector === 'KOVALCHYK Y.' && 
-                   isSameDay && 
-                   ['OK','NDF','SCRAP TTL'].includes(r.status) &&
-                   r.type !== 'MNT';
-        });
-
-        if (!records.length) return;
-
-        const textToCopy = records.map(r => r.serial).join('\n');
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const oldSymbol = secretBtn.textContent;
-            secretBtn.textContent = "✓";
-            setTimeout(() => secretBtn.textContent = oldSymbol, 1200);
-        });
-    };
-}
-
-const bulkSearchBtn = document.getElementById('bulk-search-btn');
-if(bulkSearchBtn) {
-    bulkSearchBtn.onclick = () => {
-        if(!modalBody || !modal) return;
-        modalBody.innerHTML = `
-            <h3 style="color:#0ff; margin-top:0;">Bulk Search</h3>
-            <textarea id="bulk-input" placeholder="Wklej numery SN rozdzielone enterem..."></textarea>
-            <button id="run-bulk-search">SZUKAJ</button>
-            <div id="bulk-result" style="margin-top:20px;"></div>
-        `;
-        modal.classList.add('show');
-
-        document.getElementById('run-bulk-search').onclick = () => {
-            const inputVal = document.getElementById('bulk-input').value;
-            // Приводим все серийники из ввода к верхнему регистру
-            const snList = inputVal.split('\n').map(s => s.trim().toUpperCase()).filter(s => s !== "");
-            if(!snList.length) return;
-
-            const groups = {};  
-            const notFound = [];
- 
-            snList.forEach(sn => {
-                // Приводим r.serial из кэша к верхнему регистру перед сравнением
-                const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === sn);
-                if(matches.length) {
-                    matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
-                    const record = matches[0];
-                    const wName = record.name || 'UNKNOWN';
-                    if(!groups[wName]) groups[wName] = [];
-                    groups[wName].push(record);
-                } else {
-                    notFound.push(sn);
-                }
-            });
- 
-            const sortedNames = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
- 
-            let resHtml = "";
- 
-            sortedNames.forEach(name => {
-                // ПРАВКА: Иконки в масс поиск
-                let userClass = '';
-                if (name === 'KOVALCHYK Y.') userClass = 'king-user';
-                else if (name === 'POKALCHUK A.') userClass = 'flower-user';
-
-                resHtml += `
-                <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
-                    <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold;">
-                        <span class="${userClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
+                        <span class="${kingClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
                     </summary>
                     <table style="width: 100%; border-collapse: collapse; background: #222;">
                         <thead>
@@ -1258,13 +652,8 @@ function displayCombinedStats(filtered) {
         .forEach(([name, data]) => {
             const row = document.createElement('tr');
             
-            // ПРАВКА: Проверка на короля или цветочек и добавление класса
-            let nameClass = '';
-            if (name === 'KOVALCHYK Y.') {
-                nameClass = 'class="king-user"';
-            } else if (name === 'POKALCHUK A.') {
-                nameClass = 'class="flower-user"';
-            }
+            // ПРАВКА: Проверка на короля и добавление класса
+            const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
             
             row.innerHTML = `<td onclick="openModal('${name}')" ${nameClass}>${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
             tbody.appendChild(row);
@@ -1293,13 +682,8 @@ function displayDiagonalStats(filtered) {
     Object.entries(diagStats).sort().forEach(([name, diags]) => {
         const row = document.createElement('tr');
         
-        // ПРАВКА: Класс короля или цветочка для таблицы диагоналей
-        let nameClass = '';
-        if (name === 'KOVALCHYK Y.') {
-            nameClass = 'class="king-user"';
-        } else if (name === 'POKALCHUK A.') {
-            nameClass = 'class="flower-user"';
-        }
+        // ПРАВКА: Класс короля для таблицы диагоналей
+        const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
         
         row.innerHTML = `<td ${nameClass}>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
         tbody.appendChild(row);
@@ -1335,12 +719,9 @@ document.getElementById('search').onkeypress = async e => {
         if (matches.length) {
             output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
             <tbody>${matches.map((d, i) => {
-                // ПРАВКА: Иконки в результатах поиска
-                let userClass = '';
-                if (d.name === 'KOVALCHYK Y.') userClass = 'king-user';
-                else if (d.name === 'POKALCHUK A.') userClass = 'flower-user';
-
-                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
+                // ПРАВКА: Класс короля в результатах поиска
+                const kingClass = (d.name === 'KOVALCHYK Y.') ? 'king-user' : '';
+                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${kingClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
             }).join('')}</tbody></table>`;
         } else { 
             output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
@@ -1372,42 +753,42 @@ updateStats();
 setInterval(updateStats, 60000);
 
 const backgrounds = [
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg)",
-"[https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg](https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg)"
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-carlos-oliva-1966452-3586966.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-1367192.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-eberhardgross-640781.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-1526713.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-gochrisgoxyz-1643409.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-iriser-1366957.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joshkjack-135018.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-326055.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rickyrecap-2627063.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-rpnickson-2478248.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sanaan-3075993.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-simon73-1183099.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pengwhan-1767434.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harry-shum-17627821-15984177.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-am83-12709111.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-njeromin-12766489.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-533923.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-robshumski-1903702.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-elti-meshau-107925-333850.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-harun-tan-2311991-3980364.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-joyston-judah-331625-933054.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-francesco-ungaro-464336.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-pixabay-35857.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jahoo-388415.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-therato-1933320.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2166711.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thanhhoa-tran-640546-1462892.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-jplenio-3131634.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-quang-nguyen-vinh-222549-2563129.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-david-bartus-43782-2379653.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-dreamypixel-547114.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-sebastiaan9977-1097456.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-souvenirpixels-1519088.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-stywo-1261731.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563355.jpg",
+"https://raw.githubusercontent.com/iDLC1990/status-dashboard/main/pexels-thatguycraig000-1563356.jpg"
 ];
 let bgIndex = 0;
 setInterval(() => {
