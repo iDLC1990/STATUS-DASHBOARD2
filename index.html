@@ -319,7 +319,7 @@ text-shadow: 0 0 8px #0ff;
 .header h1 { font-size: 12px; }
 }
 
-/* --- НОВЫЕ СТИЛИ ДЛЯ КОРОЛЯ --- */
+/* --- СТИЛИ ДЛЯ КОРОЛЯ --- */
 @keyframes rgb-text {
   0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
   33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
@@ -332,13 +332,25 @@ text-shadow: 0 0 8px #0ff;
     animation: rgb-text 3s infinite linear;
 }
 
-/* Добавляем корону перед именем */
 .king-user::before {
     content: "👑 "; 
     font-size: 1.2em;
-    animation: none; /* Корона не переливается, она золотая */
+    animation: none; 
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
 }
+
+/* --- КАСТОМНЫЕ ИКОНКИ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ --- */
+.owl-user { font-weight: bold !important; color: #e6e6fa; text-shadow: 0 0 5px #e6e6fa; }
+.owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
+
+.pl-user { font-weight: bold !important; color: #ff9999; text-shadow: 0 0 5px #ff9999; }
+.pl-user::before { content: "🇵🇱 "; font-size: 1.2em; text-shadow: none; }
+
+.flower-user { font-weight: bold !important; color: #ffb3e6; text-shadow: 0 0 5px #ffb3e6; }
+.flower-user::before { content: "🌸 "; font-size: 1.2em; text-shadow: none; }
+
+.boxer-user { font-weight: bold !important; color: #ff6666; text-shadow: 0 0 5px #ff6666; }
+.boxer-user::before { content: "🥊 "; font-size: 1.2em; text-shadow: none; }
 /* --------------------------------- */
 
 </style>
@@ -409,6 +421,18 @@ const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
 const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
 
 let combinedDataCache = []; 
+
+// Функция для выдачи кастомных иконок
+function getUserCustomClass(name) {
+    switch(name) {
+        case 'KOVALCHYK Y.': return 'king-user';
+        case 'KUKU O.': return 'owl-user';
+        case 'BŁASZKOWSKA M.': return 'pl-user';
+        case 'POKALCHUK A.': return 'flower-user';
+        case 'NIKOLAIEV D.': return 'boxer-user';
+        default: return '';
+    }
+}
 
 const diagonalMapPrefix = {'WH8':55,'WC8':32,'WU0':43,'SQ1':43,'WM5':50,'WC7':32,'WP5':65,'WW1':75,'WM6':50};
 const diagonalMapSuffix = {'860':86,'850':85,'750':75,'700':70,'650':65,'580':58,'575':58,'550':55,'545':55,'500':50,'498':50,'495':50,'490':50,'438':43,'435':43,'430':43,'428':43,'425':43,'420':43,'418':43,'415':43,'398':43,'395':43,'390':43,'348':32,'345':32,'340':32,'328':32,'325':32,'320':32,'318':32,'315':32,'278':27,'275':27,'270':27,'248':24,'245':24,'240':24,'238':24,'235':24,'230':24};
@@ -535,7 +559,6 @@ if(bulkSearchBtn) {
 
         document.getElementById('run-bulk-search').onclick = () => {
             const inputVal = document.getElementById('bulk-input').value;
-            // Приводим все серийники из ввода к верхнему регистру
             const snList = inputVal.split('\n').map(s => s.trim().toUpperCase()).filter(s => s !== "");
             if(!snList.length) return;
 
@@ -543,7 +566,6 @@ if(bulkSearchBtn) {
             const notFound = [];
  
             snList.forEach(sn => {
-                // Приводим r.serial из кэша к верхнему регистру перед сравнением
                 const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === sn);
                 if(matches.length) {
                     matches.sort((a,b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
@@ -561,12 +583,11 @@ if(bulkSearchBtn) {
             let resHtml = "";
  
             sortedNames.forEach(name => {
-                // ПРАВКА: Добавляем класс короля в масс поиск
-                const kingClass = (name === 'KOVALCHYK Y.') ? 'king-user' : '';
+                const userClass = getUserCustomClass(name);
                 resHtml += `
                 <details style="margin-bottom: 10px; border: 1px solid #008080; border-radius: 5px;">
                     <summary style="padding: 10px; cursor: pointer; background: rgba(0, 128, 128, 0.2); font-weight: bold;">
-                        <span class="${kingClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
+                        <span class="${userClass}" style="display:inline-flex;">${name}</span> — [${groups[name].length}]
                     </summary>
                     <table style="width: 100%; border-collapse: collapse; background: #222;">
                         <thead>
@@ -651,11 +672,10 @@ function displayCombinedStats(filtered) {
         .sort((a, b) => a[1].OK - b[1].OK)
         .forEach(([name, data]) => {
             const row = document.createElement('tr');
+            const userClass = getUserCustomClass(name);
+            const nameAttr = userClass ? `class="${userClass}"` : '';
             
-            // ПРАВКА: Проверка на короля и добавление класса
-            const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
-            
-            row.innerHTML = `<td onclick="openModal('${name}')" ${nameClass}>${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
+            row.innerHTML = `<td onclick="openModal('${name}')" ${nameAttr}>${name}</td><td>${data.NDF}</td><td>${data.OK}</td><td>${data.WAITING}</td><td>${data['SCRAP TTL']}</td><td>${data['SCRAP PNLA']}</td><td class="sum-col">${data.total}</td>`;
             tbody.appendChild(row);
         });
         
@@ -681,11 +701,10 @@ function displayDiagonalStats(filtered) {
     tbody.innerHTML = '';
     Object.entries(diagStats).sort().forEach(([name, diags]) => {
         const row = document.createElement('tr');
+        const userClass = getUserCustomClass(name);
+        const nameAttr = userClass ? `class="${userClass}"` : '';
         
-        // ПРАВКА: Класс короля для таблицы диагоналей
-        const nameClass = (name === 'KOVALCHYK Y.') ? 'class="king-user"' : '';
-        
-        row.innerHTML = `<td ${nameClass}>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
+        row.innerHTML = `<td ${nameAttr}>${name}</td>` + allDiagonals.map(d => `<td>${diags[d]||0}</td>`).join('') + `<td class="sum-col">${Object.values(diags).reduce((a,b)=>a+b,0)}</td>`;
         tbody.appendChild(row);
     });
 }
@@ -707,21 +726,18 @@ startLiveClock();
     
 document.getElementById('search').onkeypress = async e => {
     if (e.key === 'Enter') {
-        // Приводим поисковый запрос к верхнему регистру
         const serial = e.target.value.trim().toUpperCase();
         const output = document.getElementById('search-result');
         if (!serial) {
             output.innerHTML = "";
             return;
         }
-        // Приводим r.serial к верхнему регистру перед сравнением
         const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
         if (matches.length) {
             output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
             <tbody>${matches.map((d, i) => {
-                // ПРАВКА: Класс короля в результатах поиска
-                const kingClass = (d.name === 'KOVALCHYK Y.') ? 'king-user' : '';
-                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${kingClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
+                const userClass = getUserCustomClass(d.name);
+                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
             }).join('')}</tbody></table>`;
         } else { 
             output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
