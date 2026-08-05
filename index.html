@@ -415,6 +415,7 @@ const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
 const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
 
 let combinedDataCache = []; 
+let isPnVisible = false; // Флаг состояния видимости таблицы pn
 
 // Функция для выдачи кастомных иконок
 function getUserCustomClass(name) {
@@ -807,13 +808,15 @@ setInterval(() => {
     document.body.style.backgroundSize = "cover";
 }, 180000);
 
-// Функция получения и вывода последней записи с листа pn
-async function showLatestPnRecord() {
+// Загрузка и обновление данных листа pn без принудительного показа прелоадера при тихом автообновлении
+async function refreshPnRecord(showLoader = false) {
     const output = document.getElementById('search-result');
     if (!output) return;
-    output.innerHTML = "<p style='color:#0ff;'>Pobieranie danych (pn)...</p>";
+
+    if (showLoader) {
+        output.innerHTML = "<p style='color:#0ff;'>Pobieranie danych (pn)...</p>";
+    }
     
-    // Передаем sheetIdArchive вместо базовой таблицы
     const rows = await getData('pn', sheetIdArchive);
     if (!rows || rows.length === 0) {
         output.innerHTML = "<p style='color:yellow;'>Brak danych na листе pn!</p>";
@@ -832,6 +835,27 @@ async function showLatestPnRecord() {
 
     output.innerHTML = html;
 }
+
+// Функцияпереключения (toggle) по нажатию Alt+3
+async function togglePnRecord() {
+    const output = document.getElementById('search-result');
+    if (!output) return;
+
+    if (isPnVisible) {
+        output.innerHTML = "";
+        isPnVisible = false;
+    } else {
+        isPnVisible = true;
+        await refreshPnRecord(true);
+    }
+}
+
+// Автоматическое тихое обновление раз в 60 секунд, если блок pn сейчас показан
+setInterval(() => {
+    if (isPnVisible) {
+        refreshPnRecord(false);
+    }
+}, 30000);
 
 window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
@@ -854,7 +878,7 @@ window.addEventListener('keydown', (e) => {
         }
         if (e.code === 'Digit3' || e.key === '3') {
             e.preventDefault();
-            showLatestPnRecord();
+            togglePnRecord();
         }
     }
     if (e.key === 'Escape') {
