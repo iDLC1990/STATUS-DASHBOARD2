@@ -813,7 +813,8 @@ async function showLatestPnRecord() {
     if (!output) return;
     output.innerHTML = "<p style='color:#0ff;'>Pobieranie danych (pn)...</p>";
     
-    const rows = await getData('pn');
+    // Передаем sheetIdArchive вместо базовой таблицы
+    const rows = await getData('pn', sheetIdArchive);
     if (!rows || rows.length === 0) {
         output.innerHTML = "<p style='color:yellow;'>Brak danych na листе pn!</p>";
         return;
