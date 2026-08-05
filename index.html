@@ -347,8 +347,6 @@ text-shadow: 0 0 8px #0ff;
 .flower-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .flower-user::before { content: "🌸 "; font-size: 1.2em; text-shadow: none; }
 
-
-
 </style>
 </head>
 <body>
@@ -809,6 +807,31 @@ setInterval(() => {
     document.body.style.backgroundSize = "cover";
 }, 180000);
 
+// Функция получения и вывода последней записи с листа pn
+async function showLatestPnRecord() {
+    const output = document.getElementById('search-result');
+    if (!output) return;
+    output.innerHTML = "<p style='color:#0ff;'>Pobieranie danych (pn)...</p>";
+    
+    const rows = await getData('pn');
+    if (!rows || rows.length === 0) {
+        output.innerHTML = "<p style='color:yellow;'>Brak danych na листе pn!</p>";
+        return;
+    }
+
+    const hasHeader = rows.length > 1;
+    const headers = hasHeader ? rows[0] : null;
+    const lastRow = rows[rows.length - 1];
+
+    let html = '<table>';
+    if (headers) {
+        html += '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+    }
+    html += '<tbody><tr class="latest-record">' + lastRow.map(v => `<td>${v || '--'}</td>`).join('') + '</tr></tbody></table>';
+
+    output.innerHTML = html;
+}
+
 window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         if (e.key === 'Escape') modal.classList.remove('show');
@@ -827,6 +850,10 @@ window.addEventListener('keydown', (e) => {
             b.parentElement.style.display = 'block';
             const isHidden = window.getComputedStyle(b).display === 'none';
             b.style.display = isHidden ? 'block' : 'none';
+        }
+        if (e.code === 'Digit3' || e.key === '3') {
+            e.preventDefault();
+            showLatestPnRecord();
         }
     }
     if (e.key === 'Escape') {
