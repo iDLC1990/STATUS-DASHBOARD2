@@ -831,8 +831,8 @@ async function refreshPnRecord(showLoader = false) {
     if (headers) {
         html += '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
     }
-    // --- ПРАВКА ЗДЕСЬ: Добавлен onClick с копированием в буфер и сменой цвета ячейки для визуального отклика ---
-    html += '<tbody><tr class="latest-record">' + lastRow.map(v => `<td style="cursor: pointer;" title="Kliknij, aby skopiować" onclick="navigator.clipboard.writeText(this.innerText); let oldColor = this.style.color; this.style.color = '#0ff'; setTimeout(() => this.style.color = oldColor, 300);">${v || '--'}</td>`).join('') + '</tr></tbody></table>';
+    // --- ПРАВКА ЗДЕСЬ: onClick теперь висит на всей строке <tr>, а не на отдельной <td>. Копирует все ячейки через табуляцию (для Excel) ---
+    html += '<tbody><tr class="latest-record" style="cursor: pointer;" title="Kliknij, aby skopiować cały wiersz" onclick="navigator.clipboard.writeText(Array.from(this.children).map(td => td.innerText).join(\'\\t\')); let oldColor = this.style.color; this.style.color = \'#0ff\'; setTimeout(() => this.style.color = oldColor, 300);">' + lastRow.map(v => `<td>${v || '--'}</td>`).join('') + '</tr></tbody></table>';
 
     output.innerHTML = html;
 }
