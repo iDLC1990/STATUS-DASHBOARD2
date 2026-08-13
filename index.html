@@ -354,6 +354,9 @@ text-shadow: 0 0 8px #0ff;
 
 .heart-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #ff69b4; }
 .heart-user::before { content: "❤️ "; font-size: 1.2em; text-shadow: none; }
+    
+.cat-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
+.cat-user::before { content: "🐱 "; font-size: 1.2em; text-shadow: none; }
 
 </style>
 </head>
@@ -434,6 +437,7 @@ function getUserCustomClass(name) {
         case 'POKALCHUK A.': return 'flower-user';
         case 'NIKOLAIEV D.': return 'boxer-user';
         case 'YAROSHENKO L.': return 'heart-user';
+        case 'ZAHUBYPALETS K.': return 'cat-user';
         default: return '';
     }
 }
