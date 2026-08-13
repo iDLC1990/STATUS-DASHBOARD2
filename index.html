@@ -343,9 +343,17 @@ text-shadow: 0 0 8px #0ff;
 .owl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
 
-
 .flower-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .flower-user::before { content: "🌸 "; font-size: 1.2em; text-shadow: none; }
+
+.pl-user { font-weight: bold !important; color: #fff; }
+.pl-user::before { content: " "; font-size: 1.2em; }
+
+.boxer-user { font-weight: bold !important; color: #fff; }
+.boxer-user::before { content: "🥊🥊 "; font-size: 1.2em; }
+
+.heart-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #ff69b4; }
+.heart-user::before { content: "❤️ "; font-size: 1.2em; text-shadow: none; }
 
 </style>
 </head>
@@ -425,6 +433,7 @@ function getUserCustomClass(name) {
         case 'BŁASZKOWSKA M.': return 'pl-user';
         case 'POKALCHUK A.': return 'flower-user';
         case 'NIKOLAIEV D.': return 'boxer-user';
+        case 'YAROSHENKO L.': return 'heart-user';
         default: return '';
     }
 }
@@ -559,7 +568,7 @@ if(bulkSearchBtn) {
 
             const groups = {};  
             const notFound = [];
- 
+
             snList.forEach(sn => {
                 const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === sn);
                 if(matches.length) {
@@ -572,11 +581,11 @@ if(bulkSearchBtn) {
                     notFound.push(sn);
                 }
             });
- 
+
             const sortedNames = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
- 
+
             let resHtml = "";
- 
+
             sortedNames.forEach(name => {
                 const userClass = getUserCustomClass(name);
                 resHtml += `
@@ -591,7 +600,7 @@ if(bulkSearchBtn) {
                                 <th style="border: 1px solid #fff; padding: 10px;">Data</th>
                                 <th style="border: 1px solid #fff; padding: 10px;">Status</th>
                                 <th style="border: 1px solid #fff; padding: 10px;">Finalna</th> 
-                                <th style="border: 1px solid #fff; padding: 10px;">OC</th>   
+                                <th style="border: 1px solid #fff; padding: 10px;">OC</th>    
                                 <th style="border: 1px solid #fff; padding: 10px;">Info</th>
                             </tr>
                         </thead>
@@ -634,7 +643,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych dla wyбранego работника на dzisiaj.</p>";
+        modalBody.innerHTML = "<p>Brak danych dla wyбранего работника на dzisiaj.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
@@ -831,13 +840,12 @@ async function refreshPnRecord(showLoader = false) {
     if (headers) {
         html += '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
     }
-    // --- ПРАВКА ЗДЕСЬ: onClick теперь висит на всей строке <tr>, а не на отдельной <td>. Копирует все ячейки через табуляцию (для Excel) ---
     html += '<tbody><tr class="latest-record" style="cursor: pointer;" title="Kliknij, aby skopiować cały wiersz" onclick="navigator.clipboard.writeText(Array.from(this.children).map(td => td.innerText).join(\'\\t\')); let oldColor = this.style.color; this.style.color = \'#0ff\'; setTimeout(() => this.style.color = oldColor, 300);">' + lastRow.map(v => `<td>${v || '--'}</td>`).join('') + '</tr></tbody></table>';
 
     output.innerHTML = html;
 }
 
-// Функцияпереключения (toggle) по нажатию Alt+3
+// Функция переключения (toggle) по нажатию Alt+3
 async function togglePnRecord() {
     const output = document.getElementById('search-result');
     if (!output) return;
@@ -851,7 +859,7 @@ async function togglePnRecord() {
     }
 }
 
-// Автоматическое тихое обновление раз в 60 секунд, если блок pn сейчас показан
+// Автоматическое тихое обновление раз в 5 секунд, если блок pn сейчас показан
 setInterval(() => {
     if (isPnVisible) {
         refreshPnRecord(false);
