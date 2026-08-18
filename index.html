@@ -340,82 +340,23 @@ text-shadow: 0 0 8px #0ff;
 }
 
 /* --- КАСТОМНЫЕ ИКОНКИ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ --- */
-    
-/* --- СТИЛИ И ИКОНКИ ПОЛЬЗОВАТЕЛЕЙ (BEFORE & AFTER) --- */
-@keyframes rgb-text {
-  0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-  33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
-  66% { color: #0000ff; text-shadow: 0 0 8px #0000ff; }
-  100% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-}
-
-/* KOVALCHYK Y. */
-.king-user { font-weight: bold !important; animation: rgb-text 3s infinite linear; }
-.king-user::before { content: "👑 "; font-size: 1.2em; animation: none; text-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
-.king-user::after { content: " "; font-size: 1.2em; animation: none; text-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
-
-/* KUKU O. */
 .owl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
-.owl-user::after { content: " "; font-size: 1.2em; text-shadow: none; }
 
-/* POKALCHUK A. */
 .flower-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .flower-user::before { content: "🌸 "; font-size: 1.2em; text-shadow: none; }
-.flower-user::after { content: " "; font-size: 1.2em; text-shadow: none; }
 
-/* BŁASZKOWSKA M. */
 .pl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #ffb6c1; }
 .pl-user::before { content: "🌷 "; font-size: 1.2em; text-shadow: none; }
-.pl-user::after { content: " "; font-size: 1.2em; text-shadow: none; }
 
-/* NIKOLAIEV D. */
 .boxer-user { font-weight: bold !important; color: #fff; }
-.boxer-user::before { content: "🥊/* --- СТИЛИ И ИКОНКИ ПОЛЬЗОВАТЕЛЕЙ (BEFORE & AFTER) --- */
-@keyframes rgb-text {
-  0% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-  33% { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
-  66% { color: #0000ff; text-shadow: 0 0 8px #0000ff; }
-  100% { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-}
+.boxer-user::before { content: "🥊🥊 "; font-size: 1.2em; }
 
-/* KOVALCHYK Y. */
-.king-user { font-weight: bold !important; animation: rgb-text 3s infinite linear; }
-.king-user::before { content: "👑 "; font-size: 1.2em; animation: none; text-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
-.king-user::after { content: " 👑"; font-size: 1.2em; animation: none; text-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
-
-/* KUKU O. */
-.owl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
-.owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
-.owl-user::after { content: " 🦉"; font-size: 1.2em; text-shadow: none; }
-
-/* POKALCHUK A. */
-.flower-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
-.flower-user::before { content: "🌸 "; font-size: 1.2em; text-shadow: none; }
-.flower-user::after { content: " 🌸"; font-size: 1.2em; text-shadow: none; }
-
-/* BŁASZKOWSKA M. */
-.pl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #ffb6c1; }
-.pl-user::before { content: "🌷 "; font-size: 1.2em; text-shadow: none; }
-.pl-user::after { content: " 🌷"; font-size: 1.2em; text-shadow: none; }
-
-/* NIKOLAIEV D. */
-.boxer-user { font-weight: bold !important; color: #fff; }
-.boxer-user::before { content: "🥊 "; font-size: 1.2em; }
-.boxer-user::after { content: " "; font-size: 1.2em; }
-
-/* YAROSHENKO L. */
 .heart-user { font-weight: bold !important; color: #fff; }
 .heart-user::before { content: "🩷 "; font-size: 1.2em; color: #ff69b4; text-shadow: 0 0 5px #ff69b4; }
-.heart-user::after { content: " "; font-size: 1.2em; color: #ff69b4; text-shadow: 0 0 5px #ff69b4; }
-
-/* ZAHUBYPALETS K. */
+    
 .cat-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
-.cat-user::before { content: "🐱 "; font-size: 1.2em; text-shadow: none; }
-.cat-user::after { content: " 😼"; font-size: 1.2em; text-shadow: none; } "; font-size: 1.2em; }
-.boxer-user::after { content: " c"; font-size: 1.2em; }
-
-
+.cat-user::before { content: "🐱 😼"; font-size: 1.2em; text-shadow: none; }
 
 </style>
 </head>
@@ -490,7 +431,6 @@ let isPnVisible = false; // Флаг состояния видимости та�
 // Функция для выдачи кастомных иконок
 function getUserCustomClass(name) {
     switch(name) {
-            
         case 'KOVALCHYK Y.': return 'king-user';
         case 'KUKU O.': return 'owl-user';
         case 'BŁASZKOWSKA M.': return 'pl-user';
