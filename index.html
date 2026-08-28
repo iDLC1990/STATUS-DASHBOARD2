@@ -339,27 +339,18 @@ text-shadow: 0 0 8px #0ff;
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
 }
 
-/* --- СТИЛЬ ДЛЯ STEPANNNNNN --- */
+    /* --- СТИЛЬ ДЛЯ STEPANNNNNN --- */
 .stepan-user { 
     font-weight: bold !important; 
-    font-size: 0 !important; /* Прячем оригинальное имя */
+    font-size: 0 !important; /* Прячем оригинальное имя "ULANOVYCH R." */
 }
 .stepan-user::before { 
-    content: "🤪🤡 STEPANNNNNN "; 
-    font-size: 16px; 
+    content: "🤪🤡 STEPANNNNNN "; /* Ржачные смайлы и новое имя */
+    font-size: 14px; /* Верни тут стандартный размер шрифта (14-16px в зависимости от твоей таблицы) */
     color: #fff; 
-    text-shadow: 0 0 8px #ff00ff; 
+    text-shadow: 0 0 8px #ff00ff; /* Дикий неоново-розовый свет для угара */
 }
-
-/* ФИКС ДЛЯ STEPANNNNNN В ПОЛНОЭКРАННОМ РЕЖИМЕ */
-.fullscreen-mode td.stepan-user {
-    font-size: 0 !important; /* Обязательно прячем старое имя при развороте */
-}
-.fullscreen-mode td.stepan-user::before {
-    font-size: min(1.2vw, 2.5vh) !important; /* Масштабируем новое имя под экран */
-}
-
-/* --- КАСТОМНЫЕ ИКОНКИ ДЛЯ ОСТАЛЬНЫХ ПОЛЬЗОВАТЕЛЕЙ --- */
+/* --- КАСТОМНЫЕ ИКОНКИ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ --- */
 .owl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
 
@@ -377,6 +368,7 @@ text-shadow: 0 0 8px #0ff;
     
 .cat-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .cat-user::before { content: "🐱 😼"; font-size: 1.2em; text-shadow: none; }
+
 </style>
 </head>
 <body>
