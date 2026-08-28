@@ -339,6 +339,17 @@ text-shadow: 0 0 8px #0ff;
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
 }
 
+    /* --- СТИЛЬ ДЛЯ STEPANNNNNN --- */
+.stepan-user { 
+    font-weight: bold !important; 
+    font-size: 0 !important; /* Прячем оригинальное имя "ULANOVYCH R." */
+}
+.stepan-user::before { 
+    content: "🤪🤡 STEPANNNNNN "; /* Ржачные смайлы и новое имя */
+    font-size: 14px; /* Верни тут стандартный размер шрифта (14-16px в зависимости от твоей таблицы) */
+    color: #fff; 
+    text-shadow: 0 0 8px #ff00ff; /* Дикий неоново-розовый свет для угара */
+}
 /* --- КАСТОМНЫЕ ИКОНКИ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ --- */
 .owl-user { font-weight: bold !important; color: #fff; text-shadow: 0 0 5px #fff; }
 .owl-user::before { content: "🦉 "; font-size: 1.2em; text-shadow: none; }
@@ -438,6 +449,7 @@ function getUserCustomClass(name) {
         case 'NIKOLAIEV D.': return 'boxer-user';
         case 'YAROSHENKO L.': return 'heart-user';
         case 'ZAHUBYPALETS K.': return 'cat-user';
+        case 'ULANOVYCH R.': return 'stepan-user'; // <--- ДОБАВЛЕНА ЭТА СТРОКА
         default: return '';
     }
 }
