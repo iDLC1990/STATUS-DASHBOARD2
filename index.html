@@ -434,6 +434,7 @@ text-shadow: 0 0 8px #0ff;
 <script>
 const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
 const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+const sheetIdNew = '1Ets--Hho-SK_x6J9Xy3oVA7ILtYKx4gscBOwy6t4PTs';
 const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
 
 let combinedDataCache = []; 
@@ -487,6 +488,7 @@ async function fetchAndCacheData() {
             getData('FI Station KOVALCHYK Y.', sheetId),
             getData('FI Station 2 ULANOVYCH.R', sheetId),
             getData('2024', sheetIdArchive)
+            getData('123', sheetIdNew)
         ]);
 
         if (!s1 && !s2) return false;
