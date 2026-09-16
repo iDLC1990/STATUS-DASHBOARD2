@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -454,7 +455,6 @@ function getUserCustomClass(name) {
         default: return '';
     }
 }
-
 const diagonalMapPrefix = {'WH8':55,'WC8':32,'WU0':43,'SQ1':43,'WM5':50,'WC7':32,'WP5':65,'WW1':75,'WM6':50};
 const diagonalMapSuffix = {'860':86,'850':85,'750':75,'700':70,'650':65,'580':58,'575':58,'550':55,'545':55,'500':50,'498':50,'495':50,'490':50,'438':43,'435':43,'430':43,'428':43,'425':43,'420':43,'418':43,'415':43,'398':43,'395':43,'390':43,'348':32,'345':32,'340':32,'328':32,'325':32,'320':32,'318':32,'315':32,'278':27,'275':27,'270':27,'248':24,'245':24,'240':24,'238':24,'235':24,'230':24};
 
@@ -484,14 +484,14 @@ async function getData(sheetName, spreadsheetId = sheetId) {
 
 async function fetchAndCacheData() {
     try {
-        const [s1, s2, s3] = await Promise.all([
+        const [s1, s2, s3, s4] = await Promise.all([
             getData('FI Station KOVALCHYK Y.', sheetId),
             getData('FI Station 2 ULANOVYCH.R', sheetId),
             getData('2024', sheetIdArchive),
             getData('123', sheetIdNew)
         ]);
 
-        if (!s1 && !s2) return false;
+        if (!s1 && !s2 && !s3 && !s4) return false;
 
         const mapR = (r, insp) => ({
             date: r[0] || "", 
@@ -508,7 +508,8 @@ async function fetchAndCacheData() {
         combinedDataCache = [
             ...(s1 ? s1.slice(1) : []).map(r => mapR(r, 'KOVALCHYK Y.')),
             ...(s2 ? s2.slice(1) : []).map(r => mapR(r, 'ULANOVYCH.R')),
-            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE'))
+            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE')),
+            ...(s4 ? s4.slice(1) : []).map(r => mapR(r, '123'))
         ];
         return true;
     } catch (e) {
