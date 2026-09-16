@@ -487,7 +487,7 @@ async function fetchAndCacheData() {
         const [s1, s2, s3] = await Promise.all([
             getData('FI Station KOVALCHYK Y.', sheetId),
             getData('FI Station 2 ULANOVYCH.R', sheetId),
-            getData('2024', sheetIdArchive)
+            getData('2024', sheetIdArchive),
             getData('123', sheetIdNew)
         ]);
 
