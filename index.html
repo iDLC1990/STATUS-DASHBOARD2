@@ -491,17 +491,24 @@ async function fetchAndCacheData() {
             getData('123', sheetIdNew)
         ]);
 
+        console.log("DATA CHECK:", {
+            KOVALCHYK: s1 ? s1.length : null,
+            ULANOVYCH: s2 ? s2.length : null,
+            ARCHIVE: s3 ? s3.length : null,
+            SHEET_123: s4 ? s4.length : null
+        });
+
         if (!s1 && !s2 && !s3 && !s4) return false;
 
         const mapR = (r, insp) => ({
-            date: r[0] || "", 
-            serial: (r[2] || "").trim(), 
-            type: (r[3] || "").trim().toUpperCase(), 
+            date: r[0] || "",
+            serial: (r[2] || "").trim(),
+            type: (r[3] || "").trim().toUpperCase(),
             status: r[4] || "",
-            name: r[5] || "", 
-            nameG: r[6] || "", 
-            ocAfterRepair: r[9] || "", 
-            comment: r[10] || "", 
+            name: r[5] || "",
+            nameG: r[6] || "",
+            ocAfterRepair: r[9] || "",
+            comment: r[10] || "",
             inspector: insp
         });
 
@@ -511,13 +518,20 @@ async function fetchAndCacheData() {
             ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE')),
             ...(s4 ? s4.slice(1) : []).map(r => mapR(r, '123'))
         ];
+
+        console.log(
+            "COMBINED CACHE:",
+            combinedDataCache.length,
+            "records"
+        );
+
         return true;
+
     } catch (e) {
         console.error("Buffer update failed:", e);
         return false;
     }
 }
-
 function parseDatePart(val) {
     if (!val) return null;
     const first = val.split(' ')[0].trim();
