@@ -1058,6 +1058,23 @@ function cleanSn(v) {
     return String(v || '').replace(/[\s\u200B-\u200D\uFEFF]/g, '').toUpperCase();
 }
 
+// дата + время строки (дд.мм.гггг или гггг-мм-дд, время ч:мм:сс) -> timestamp
+function pnTimestamp(r) {
+    const d = String(r[1] || '').trim();
+    const t = String(r[2] || '').trim();
+    let y = 0, mo = 0, day = 0;
+    let m = d.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (m) { day = +m[1]; mo = +m[2]; y = +m[3]; }
+    else {
+        m = d.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) { y = +m[1]; mo = +m[2]; day = +m[3]; }
+    }
+    if (!y) return 0;
+    const tm = t.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    const h = tm ? +tm[1] : 0, mi = tm ? +tm[2] : 0, sec = tm ? +(tm[3] || 0) : 0;
+    return new Date(y, mo - 1, day, h, mi, sec).getTime();
+}
+
 async function getPnRows() {
     // кэш 5 сек, чтобы не дёргать API на каждый Enter
     if (pnCache.rows && Date.now() - pnCache.time < 5000) return pnCache.rows;
@@ -1094,10 +1111,13 @@ document.getElementById('helper-input').addEventListener('keydown', async (e) =>
         return;
     }
 
-    // строки идут по порядку в таблице: последняя = самая свежая
+    // сортируем по дате и времени: первая запись = самая свежая
+    // (если даты одинаковые, выигрывает строка, которая ниже в таблице)
     const matches = rows
-        .filter(r => cleanSn(r[0]) === sn)
-        .reverse();
+        .map((r, idx) => ({ r, idx, ts: pnTimestamp(r) }))
+        .filter(x => cleanSn(x.r[0]) === sn)
+        .sort((a, b) => (b.ts - a.ts) || (b.idx - a.idx))
+        .map(x => x.r);
 
     if (!matches.length) {
         out.innerHTML = "<p class='helper-msg' style='color:yellow;'>Brak info o tym SN!</p>";
