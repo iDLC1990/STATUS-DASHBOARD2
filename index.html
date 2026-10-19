@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -608,6 +608,9 @@ text-shadow: 0 0 8px #0ff;
 </div>
 </div>
 
+<!-- Supabase: нужен помощнику-роботу для поиска в таблице repair_log -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
 const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
@@ -852,7 +855,7 @@ function openModal(name) {
     const records = combinedDataCache.filter(r => r.name === name && (r.date || '').split(' ')[0] === lastDateStr);
 
     if (!records.length) {
-        modalBody.innerHTML = "<p>Brak danych dla wyбранего работника на dzisiaj.</p>";
+        modalBody.innerHTML = "<p>Brak danych dla wybranego pracownika na dzisiaj.</p>";
     } else {
         let html = '<table><tr><th>Serial</th><th>Type</th><th>Status</th><th>OC</th><th>COMMENT</th></tr>';
         records.forEach(r => {
@@ -1032,68 +1035,39 @@ window.addEventListener('resize', applyHelperLayout);
 if (window.innerWidth < 1300) helperWidget.classList.remove('open');
 applyHelperLayout();
 
-let pnCache = { rows: null, time: 0 };
-
-// gid листа из ссылки на таблицу (...edit?gid=1460654843)
-const helperSheetGid = 1460654843;
-let helperSheetTitle = null;
-
-// по gid находим настоящее название вкладки через Sheets API
-async function getHelperSheetTitle() {
-    if (helperSheetTitle) return helperSheetTitle;
-    try {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetIdArchive}?fields=sheets.properties(sheetId,title)&key=${apiKey}`);
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        const sh = (data.sheets || []).find(s => s.properties.sheetId === helperSheetGid);
-        if (sh) helperSheetTitle = sh.properties.title;
-    } catch (err) {
-        console.error('Sheet title lookup failed:', err);
-    }
-    return helperSheetTitle;
-}
+// ===== Помощник-робот: только база repair_log =====
+const helperDb = window.supabase.createClient(
+    'https://wtqvaeongxncufvpvvge.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXZhZW9uZ3huY3VmdnB2dmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDM5MjIsImV4cCI6MjEwMjExOTkyMn0.tRsrb29_b9ev3K75npD5zt_Dz9FMltzaRkdK0RPDn-U'
+);
 
 // убираем пробелы, переносы и невидимые символы
 function cleanSn(v) {
     return String(v || '').replace(/[\s\u200B-\u200D\uFEFF]/g, '').toUpperCase();
 }
 
-// дата + время строки (дд.мм.гггг или гггг-мм-дд, время ч:мм:сс) -> timestamp
-function pnTimestamp(r) {
-    const d = String(r[1] || '').trim();
-    const t = String(r[2] || '').trim();
-    let y = 0, mo = 0, day = 0;
-    let m = d.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-    if (m) { day = +m[1]; mo = +m[2]; y = +m[3]; }
-    else {
-        m = d.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-        if (m) { y = +m[1]; mo = +m[2]; day = +m[3]; }
-    }
-    if (!y) return 0;
-    const tm = t.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-    const h = tm ? +tm[1] : 0, mi = tm ? +tm[2] : 0, sec = tm ? +(tm[3] || 0) : 0;
-    return new Date(y, mo - 1, day, h, mi, sec).getTime();
-}
-
-async function getPnRows() {
-    // кэш 5 сек, чтобы не дёргать API на каждый Enter
-    if (pnCache.rows && Date.now() - pnCache.time < 5000) return pnCache.rows;
-    const title = await getHelperSheetTitle();
-    const rows = await getData(title || 'pn', sheetIdArchive);
-    console.log('HELPER sheet:', title || 'pn (fallback)', 'rows:', rows ? rows.length : null);
-    if (rows) pnCache = { rows, time: Date.now() };
-    return rows || pnCache.rows;
-}
-
 function escHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// OK — только если все слова статуса OK; SPRAWDZENIE — предупреждение; остальное — брак
 function helperStatusClass(status) {
-    const s = (status || '').trim().toUpperCase();
-    if (s === 'OK') return 'ok';
-    if (s === 'VERIFY' || s === 'SPRAWDZENIE') return 'warn';
+    const tokens = String(status || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+    if (tokens.includes('SPRAWDZENIE') || tokens.includes('VERIFY')) return 'warn';
+    if (tokens.length && tokens.every(t => t === 'OK')) return 'ok';
     return 'bad';
+}
+
+// Все записи панели из базы: самые свежие сверху (по id)
+async function getHelperRecords(sn) {
+    const { data, error } = await helperDb
+        .from('repair_log')
+        .select('repair_date, repair_time, status, id')
+        .ilike('panel_sn', sn)
+        .order('id', { ascending: false })
+        .limit(200);
+    if (error) throw error;
+    return data || [];
 }
 
 document.getElementById('helper-input').addEventListener('keydown', async (e) => {
@@ -1104,20 +1078,16 @@ document.getElementById('helper-input').addEventListener('keydown', async (e) =>
 
     setRobotState('load');
     out.innerHTML = "<p class='helper-msg' style='color:#0ff;'>Szukam...</p>";
-    const rows = await getPnRows();
-    if (!rows) {
-        out.innerHTML = "<p class='helper-msg' style='color:#ff5555;'>Błąd pobierania danych (pn)</p>";
+
+    let matches;
+    try {
+        matches = await getHelperRecords(sn);
+    } catch (err) {
+        console.error('Helper baza:', err);
+        out.innerHTML = "<p class='helper-msg' style='color:#ff5555;'>Błąd pobierania danych (baza)</p>";
         setRobotState('bad', true);
         return;
     }
-
-    // сортируем по дате и времени: первая запись = самая свежая
-    // (если даты одинаковые, выигрывает строка, которая ниже в таблице)
-    const matches = rows
-        .map((r, idx) => ({ r, idx, ts: pnTimestamp(r) }))
-        .filter(x => cleanSn(x.r[0]) === sn)
-        .sort((a, b) => (b.ts - a.ts) || (b.idx - a.idx))
-        .map(x => x.r);
 
     if (!matches.length) {
         out.innerHTML = "<p class='helper-msg' style='color:yellow;'>Brak info o tym SN!</p>";
@@ -1126,26 +1096,27 @@ document.getElementById('helper-input').addEventListener('keydown', async (e) =>
     }
 
     const last = matches[0];
-    const status = (last[4] || '--').trim();
+    const status = (last.status || '--').trim();
     const cls = helperStatusClass(status);
 
     let html = `
         <div class="helper-status ${cls}">${escHtml(status)}</div>
-        <div class="helper-meta">${escHtml(last[1] || '')} ${escHtml(last[2] || '')} • #${escHtml(last[3] || '')}</div>`;
+        <div class="helper-meta">${escHtml(last.repair_date || '')} ${escHtml(last.repair_time || '')}</div>`;
 
     if (matches.length > 1) {
         html += `<table>
             <thead><tr><th>Data</th><th>Godzina</th><th>Status</th></tr></thead>
             <tbody>${matches.map((r, i) => `
                 <tr ${i === 0 ? 'class="latest-record"' : ''}>
-                    <td>${escHtml(r[1] || '')}</td>
-                    <td>${escHtml(r[2] || '')}</td>
-                    <td>${escHtml(r[4] || '--')}</td>
+                    <td>${escHtml(r.repair_date || '')}</td>
+                    <td>${escHtml(r.repair_time || '')}</td>
+                    <td>${escHtml(r.status || '--')}</td>
                 </tr>`).join('')}
             </tbody></table>`;
     }
+
     out.innerHTML = html;
-    setRobotState(cls === 'ok' ? 'ok' : cls === 'warn' ? 'warn' : 'bad', true);
+    setRobotState(cls, true);
 });
 // ===== конец помощника =====
 
@@ -1208,7 +1179,7 @@ async function refreshPnRecord(showLoader = false) {
     
     const rows = await getData('pn', sheetIdArchive);
     if (!rows || rows.length === 0) {
-        output.innerHTML = "<p style='color:yellow;'>Brak danych на листе pn!</p>";
+        output.innerHTML = "<p style='color:yellow;'>Brak danych na liście pn!</p>";
         return;
     }
 
