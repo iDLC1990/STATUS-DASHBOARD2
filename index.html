@@ -939,25 +939,67 @@ function startLiveClock() {
 }
 
 startLiveClock();
-    
+
+// ===== Поиск номера части в Supabase pn_base =====
+// helperDb создаётся ниже в скрипте; к моменту нажатия Enter он уже существует
+async function searchPnBase(q) {
+    const safe = q.replace(/[%,()*\\]/g, '');
+    if (!safe) return [];
+    const { data, error } = await helperDb
+        .from('pn_base')
+        .select('panel_pn, data, pn, location, info')
+        .or(`panel_pn.ilike.%${safe}%,pn.ilike.%${safe}%`)
+        .limit(50);
+    if (error) throw error;
+    return data || [];
+}
+
 document.getElementById('search').onkeypress = async e => {
-    if (e.key === 'Enter') {
-        const serial = e.target.value.trim().toUpperCase();
-        const output = document.getElementById('search-result');
-        if (!serial) {
-            output.innerHTML = "";
+    if (e.key !== 'Enter') return;
+
+    const serial = e.target.value.trim().toUpperCase();
+    const output = document.getElementById('search-result');
+
+    isPnVisible = false; // чтобы автообновление блока Alt+3 не затирало результат поиска
+
+    if (!serial) {
+        output.innerHTML = "";
+        return;
+    }
+
+    // 1) Поиск по SN — Google Sheets (как раньше)
+    const matches = combinedDataCache
+        .filter(r => (r.serial || '').trim().toUpperCase() === serial)
+        .sort((a, b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
+
+    if (matches.length) {
+        output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
+        <tbody>${matches.map((d, i) => {
+            const userClass = getUserCustomClass(d.name);
+            return `<tr ${i === 0 ? 'class="latest-record"' : ''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`;
+        }).join('')}</tbody></table>`;
+        return;
+    }
+
+    // 2) Не SN → поиск номера части в Supabase pn_base
+    output.innerHTML = "<p style='color:#0ff;'>Szukam (pn_base)...</p>";
+    try {
+        const rows = await searchPnBase(serial);
+        if (!rows.length) {
+            output.innerHTML = "<p style='color:yellow'>Brak info!</p>";
             return;
         }
-        const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
-        if (matches.length) {
-            output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
-            <tbody>${matches.map((d, i) => {
-                const userClass = getUserCustomClass(d.name);
-                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
-            }).join('')}</tbody></table>`;
-        } else { 
-            output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
-        }
+        output.innerHTML = `<table><thead><tr><th>Panel PN</th><th>Data</th><th>PN</th><th>Location</th><th>Info</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+            <td>${escHtml(r.panel_pn ?? '--')}</td>
+            <td>${escHtml(r.data ?? '--')}</td>
+            <td>${escHtml(r.pn ?? '--')}</td>
+            <td>${escHtml(r.location ?? '--')}</td>
+            <td>${escHtml(r.info ?? '--')}</td>
+        </tr>`).join('')}</tbody></table>`;
+    } catch (err) {
+        console.error('pn_base:', err);
+        output.innerHTML = "<p style='color:#ff5555;'>Błąd pobierania danych (pn_base)</p>";
     }
 };
 
