@@ -614,7 +614,6 @@ text-shadow: 0 0 8px #0ff;
 <script>
 const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
 const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-const sheetIdNew = '1Ets--Hho-SK_x6J9Xy3oVA7ILtYKx4gscBOwy6t4PTs';
 const sheetIdArchive = '1UWu4bcuHg6NHhK8ZvjDlQAIue6R1FLBlmAlBhHBj-D8';
 
 let combinedDataCache = []; 
@@ -663,21 +662,19 @@ async function getData(sheetName, spreadsheetId = sheetId) {
 
 async function fetchAndCacheData() {
     try {
-        const [s1, s2, s3, s4] = await Promise.all([
+        const [s1, s2, s3] = await Promise.all([
             getData('FI Station KOVALCHYK Y.', sheetId),
             getData('FI Station 2 ULANOVYCH.R', sheetId),
-            getData('2024', sheetIdArchive),
-            getData('123', sheetIdNew)
+            getData('2024', sheetIdArchive)
         ]);
 
         console.log("DATA CHECK:", {
             KOVALCHYK: s1 ? s1.length : null,
             ULANOVYCH: s2 ? s2.length : null,
-            ARCHIVE: s3 ? s3.length : null,
-            SHEET_123: s4 ? s4.length : null
+            ARCHIVE: s3 ? s3.length : null
         });
 
-        if (!s1 && !s2 && !s3 && !s4) return false;
+        if (!s1 && !s2 && !s3) return false;
 
         const mapR = (r, insp) => ({
             date: r[0] || "",
@@ -694,16 +691,10 @@ async function fetchAndCacheData() {
         combinedDataCache = [
             ...(s1 ? s1.slice(1) : []).map(r => mapR(r, 'KOVALCHYK Y.')),
             ...(s2 ? s2.slice(1) : []).map(r => mapR(r, 'ULANOVYCH.R')),
-            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE')),
-            ...(s4 ? s4.slice(1) : []).map(r => mapR(r, '123'))
+            ...(s3 ? s3.slice(1) : []).map(r => mapR(r, 'ARCHIVE'))
         ];
 
-        console.log(
-            "COMBINED CACHE:",
-            combinedDataCache.length,
-            "records"
-        );
-
+        console.log("COMBINED CACHE:", combinedDataCache.length, "records");
         return true;
 
     } catch (e) {
@@ -940,27 +931,66 @@ function startLiveClock() {
 
 startLiveClock();
     
-document.getElementById('search').onkeypress = async e => {
-    if (e.key === 'Enter') {
-        const serial = e.target.value.trim().toUpperCase();
-        const output = document.getElementById('search-result');
-        if (!serial) {
-            output.innerHTML = "";
-            return;
-        }
-        const matches = combinedDataCache.filter(r => (r.serial || '').trim().toUpperCase() === serial).sort((a,b) => (parseDatePart(b.date)||0) - (parseDatePart(a.date)||0));
-        if (matches.length) {
-            output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
-            <tbody>${matches.map((d, i) => {
-                const userClass = getUserCustomClass(d.name);
-                return `<tr ${i===0?'class="latest-record"':''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`
-            }).join('')}</tbody></table>`;
-        } else { 
-            output.innerHTML = "<p style='color:yellow'>Brak info!</p>"; 
-        }
-    }
-};
+// Детали по номеру части (Panel_pn) из базы pn_base
+async function searchParts(q) {
+    const pat = q.replace(/[\\%_]/g, '\\$&');
+    const { data, error } = await helperDb.from('pn_base')
+        .select('panel_pn, data, pn, location, info')
+        .ilike('panel_pn', pat)
+        .order('data', { ascending: false })
+        .limit(200);
+    if (error) throw error;
+    return data || [];
+}
 
+function fmtDmy(v) {
+    const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}.${m[2]}.${m[1]}` : String(v || '');
+}
+
+let searchSeq = 0;
+
+// Серийник -> история ремонта (таблицы). Номер части (Panel_pn) -> детали из базы pn_base
+document.getElementById('search').onkeypress = async e => {
+    if (e.key !== 'Enter') return;
+    const serial = e.target.value.trim().toUpperCase();
+    const output = document.getElementById('search-result');
+    const seq = ++searchSeq;
+    if (!serial) { output.innerHTML = ""; return; }
+
+    const matches = combinedDataCache
+        .filter(r => (r.serial || '').trim().toUpperCase() === serial)
+        .sort((a, b) => (parseDatePart(b.date) || 0) - (parseDatePart(a.date) || 0));
+
+    if (matches.length) {
+        output.innerHTML = `<table><thead><tr><th>Data</th><th>Status</th><th>NAPRAWIACZ</th><th>FINALNA</th><th>INFO</th></tr></thead>
+        <tbody>${matches.map((d, i) => {
+            const userClass = getUserCustomClass(d.name);
+            return `<tr ${i === 0 ? 'class="latest-record"' : ''}><td>${d.date}</td><td>${d.status}</td><td class="${userClass}">${d.name}</td><td>${d.nameG}</td><td>${d.comment}</td></tr>`;
+        }).join('')}</tbody></table>`;
+        return;
+    }
+
+    output.innerHTML = "<p style='color:#0ff;'>Szukam...</p>";
+    let parts = [];
+    try {
+        parts = await searchParts(serial);
+    } catch (err) {
+        console.error('pn_base:', err);
+        if (seq === searchSeq) output.innerHTML = "<p style='color:#ff5555'>Błąd pobierania danych (baza)</p>";
+        return;
+    }
+    if (seq !== searchSeq) return; // уже запущен новый поиск
+
+    if (!parts.length) {
+        output.innerHTML = "<p style='color:yellow'>Brak info!</p>";
+        return;
+    }
+    output.innerHTML = `<table><thead><tr><th>Data</th><th>PN</th><th>Lokalizacja</th><th>INFO</th></tr></thead>
+        <tbody>${parts.map((r, i) => `<tr ${i === 0 ? 'class="latest-record"' : ''}>
+            <td>${escHtml(fmtDmy(r.data))}</td><td>${escHtml(r.pn)}</td><td>${escHtml(r.location)}</td><td>${escHtml(r.info)}</td>
+        </tr>`).join('')}</tbody></table>`;
+};
 async function updateStats() {
     if (await fetchAndCacheData()) {
         const lastDate = getLastDate(combinedDataCache);
@@ -1038,7 +1068,7 @@ applyHelperLayout();
 // ===== Помощник-робот: только база repair_log =====
 const helperDb = window.supabase.createClient(
     'https://wtqvaeongxncufvpvvge.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXZhZW9uZ3huY3VmdnB2dmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDM5MjIsImV4cCI6MjEwMjExOTkyMn0.tRsrb29_b9ev3K75npD5zt_Dz9FMltzaRkdK0RPDn-U'
+    'sb_publishable_9Jfx167Q8LCF1746d1apwA_eWNb_qNb'
 );
 
 // убираем пробелы, переносы и невидимые символы
