@@ -486,6 +486,19 @@ text-shadow: 0 0 8px #0ff;
 #helper-result table { font-size: 12px; margin-top: 6px; }
 #helper-result th, #helper-result td { padding: 4px; font-size: 12px; cursor: default; }
 
+.helper-photo-btn {
+    margin-top: 10px;
+    background: #008080;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+}
+.helper-photo-btn:hover { background: #0ff; }
+
 /* широкий экран: робот живёт справа от таблиц, таблицы сдвигаются влево */
 @media (min-width: 1300px) {
     body.helper-docked { padding-right: 310px; box-sizing: border-box; }
@@ -638,7 +651,7 @@ function getUserCustomClass(name) {
         case 'NIKOLAIEV D.': return 'boxer-user';
         case 'YAROSHENKO L.': return 'heart-user';
         case 'ZAHUBYPALETS K.': return 'cat-user';
-        case 'ULANOVYCH R.': return 'stepan-user'; // <--- ДОБАВЛЕНА ЭТА СТРОКА
+        case 'ULANOVYCH R.': return 'stepan-user';
         default: return '';
     }
 }
@@ -983,6 +996,7 @@ document.getElementById('search').onkeypress = async e => {
         }
     }
 };
+
 async function updateStats() {
     if (await fetchAndCacheData()) {
         const lastDate = getLastDate(combinedDataCache);
@@ -1081,17 +1095,119 @@ function helperStatusClass(status) {
 }
 
 // Все записи панели из базы: самые свежие сверху (по id)
+// Экранируем % и _ , чтобы в ilike они считались обычными символами
 async function getHelperRecords(sn) {
+    const pat = sn.replace(/[\\%_]/g, '\\$&');
     const { data, error } = await helperDb
         .from('repair_log')
         .select('repair_date, repair_time, status, id')
-        .ilike('panel_sn', sn)
+        .ilike('panel_sn', pat)
         .order('id', { ascending: false })
         .limit(200);
     if (error) throw error;
     return data || [];
 }
 
+// Кнопка скачивания фото: показывается всегда, даже если SN ещё нет в repair_log
+function photoButtonHtml(sn) {
+    return `<button class="helper-photo-btn" data-photo-sn="${escHtml(sn)}">📷 Pobierz zdjęcie</button>`;
+}
+
+// ===== Скачивание фото =====
+let dlToastTimer = null;
+function dlToast(msg) {
+    let el = document.getElementById('dlToast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'dlToast';
+        el.className = 'dl-toast';
+        document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(dlToastTimer);
+    dlToastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// Файлы в бакете: NAME__SN.jpg, NAME__SN__2.jpg, NAME__SN__3.jpg ...
+// Скачиваются все фото серийного номера, по порядку номеров
+async function downloadPhoto(rawSn) {
+    const sn = String(rawSn || '').trim().replace(/[^A-Za-z0-9_-]/g, '');
+    if (!sn) return;
+
+    const re = new RegExp('__' + sn + '(?:__(\\d+))?\\.jpg$', 'i');
+
+    try {
+        // Читаем все файлы бакета постранично (на случай больше 1000)
+        let all = [], offset = 0;
+        while (true) {
+            const { data, error } = await helperDb.storage.from('photos').list('', {
+                limit: 1000,
+                offset,
+                sortBy: { column: 'updated_at', order: 'desc' }
+            });
+            if (error) throw error;
+            all = all.concat(data || []);
+            if (!data || data.length < 1000) break;
+            offset += 1000;
+        }
+
+        // Без суффикса = фото 1, __2 = фото 2 и т.д.
+        const files = all
+            .filter(f => re.test(f.name))
+            .map(f => ({ file: f, n: Number((f.name.match(re) || [])[1]) || 1 }))
+            .sort((a, b) => a.n - b.n);
+
+        if (!files.length) { dlToast('Brak zdjęcia dla ' + sn); return; }
+
+        let ok = 0;
+        for (let i = 0; i < files.length; i++) {
+            const { file, n } = files[i];
+            try {
+                const { data: blob, error: e2 } = await helperDb.storage.from('photos').download(file.name);
+                if (e2 || !blob) throw e2 || new Error('empty file');
+
+                const saveName = n > 1 ? `${sn}_${n}.jpg` : `${sn}.jpg`;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = saveName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+                ok++;
+
+                // Отметка «скачано» для каждого файла (ошибки не мешают)
+                try { await helperDb.rpc('mark_photo_downloaded', { p_name: file.name }); } catch (e) {}
+            } catch (e) {
+                console.error('photo download:', file.name, e);
+            }
+
+            // Пауза между скачиваниями, иначе браузер может заблокировать несколько файлов сразу
+            if (i < files.length - 1) await new Promise(r => setTimeout(r, 700));
+        }
+
+        dlToast(`Pobrano ${ok} z ${files.length} zdjęć (${sn})`);
+    } catch (e) {
+        console.error('photo download:', e);
+        dlToast('Błąd pobierania zdjęcia');
+    }
+}
+
+// Двойной клик по серийнику в таблицах
+document.addEventListener('dblclick', (e) => {
+    const td = e.target.closest && e.target.closest('td.sn-photo');
+    if (td && td.dataset.sn) downloadPhoto(td.dataset.sn);
+});
+
+// Клик по кнопке фото в роботе
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest && e.target.closest('.helper-photo-btn');
+    if (btn && btn.dataset.photoSn) downloadPhoto(btn.dataset.photoSn);
+});
+
+// Поиск по SN в роботе
 document.getElementById('helper-input').addEventListener('keydown', async (e) => {
     if (e.key !== 'Enter') return;
     const out = document.getElementById('helper-result');
@@ -1106,13 +1222,13 @@ document.getElementById('helper-input').addEventListener('keydown', async (e) =>
         matches = await getHelperRecords(sn);
     } catch (err) {
         console.error('Helper baza:', err);
-        out.innerHTML = "<p class='helper-msg' style='color:#ff5555;'>Błąd pobierania danych (baza)</p>";
+        out.innerHTML = "<p class='helper-msg' style='color:#ff5555;'>Błąd pobierania danych (baza)</p>" + photoButtonHtml(sn);
         setRobotState('bad', true);
         return;
     }
 
     if (!matches.length) {
-        out.innerHTML = "<p class='helper-msg' style='color:yellow;'>Brak info o tym SN!</p>";
+        out.innerHTML = "<p class='helper-msg' style='color:yellow;'>Brak info o tym SN!</p>" + photoButtonHtml(sn);
         setRobotState('none', true);
         return;
     }
@@ -1137,68 +1253,12 @@ document.getElementById('helper-input').addEventListener('keydown', async (e) =>
             </tbody></table>`;
     }
 
+    html += photoButtonHtml(sn);
     out.innerHTML = html;
     setRobotState(cls, true);
 });
 // ===== конец помощника =====
-// ===== Скачивание фото по двойному клику на серийном номере =====
-let dlToastTimer = null;
-function dlToast(msg) {
-    let el = document.getElementById('dlToast');
-    if (!el) {
-        el = document.createElement('div');
-        el.id = 'dlToast';
-        el.className = 'dl-toast';
-        document.body.appendChild(el);
-    }
-    el.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(dlToastTimer);
-    dlToastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
 
-// Файлы в бакете называются ФАМИЛИЯ__серийный.jpg. Ищем по серийному номеру, самый свежий файл первым
-async function downloadPhoto(rawSn) {
-    const sn = String(rawSn || '').trim().replace(/[^A-Za-z0-9_-]/g, '');
-    if (!sn) return;
-    const tail = ('__' + sn + '.jpg').toLowerCase();
-    try {
-        const { data, error } = await helperDb.storage.from('photos').list('', {
-            limit: 1000,
-            sortBy: { column: 'updated_at', order: 'desc' }
-        });
-        if (error) throw error;
-
-        const file = (data || []).find(f => f.name.toLowerCase().endsWith(tail));
-        if (!file) { dlToast('Brak zdjęcia dla ' + sn); return; }
-
-        const { data: blob, error: e2 } = await helperDb.storage.from('photos').download(file.name);
-        if (e2 || !blob) throw e2 || new Error('empty file');
-
-        const saveName = file.name.split('__')[1] || (sn + '.jpg');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = saveName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-        dlToast('Pobrano: ' + saveName);
-
-        // Отметка «скачано» для вкладки Photo (не мешает скачиванию, если не удалась)
-        try { await helperDb.rpc('mark_photo_downloaded', { p_name: file.name }); } catch (e) {}
-    } catch (e) {
-        console.error('photo download:', e);
-        dlToast('Błąd pobierania zdjęcia');
-    }
-}
-
-document.addEventListener('dblclick', (e) => {
-    const td = e.target.closest && e.target.closest('td.sn-photo');
-    if (td && td.dataset.sn) downloadPhoto(td.dataset.sn);
-});
-// ===== конец скачивания фото =====
 updateStats();
 setInterval(updateStats, 60000);
 
